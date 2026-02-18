@@ -27,7 +27,7 @@ app.post('/optimize', async (req, res) => {
     const genAI = new GoogleGenerativeAI(apiKey);
     // Model ismini 'gemini-pro' veya 'gemini-1.5-flash' olarak kullanabilirsin
 // Listende açıkça görünen, en kararlı ve hızlı model bu:
-const model = genAI.getGenerativeModel({ model: "gemini-1.5-flash" });
+const model = genAI.getGenerativeModel({ model: "gemini-flash-latest" });
     const { contents, systemInstruction } = req.body;
 
     // Prompt'u birleştiriyoruz (System instruction + User content)
