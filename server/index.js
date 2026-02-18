@@ -6,8 +6,9 @@ const { GoogleGenerativeAI } = require("@google/generative-ai");
 const app = express();
 const port = process.env.PORT || 3000;
 
+// GÜNCELLEME: Veri limitini artırdık (50mb). Büyük CV'ler artık patlamayacak.
+app.use(express.json({ limit: '50mb' }));
 app.use(cors());
-app.use(express.json());
 
 // API Key kontrolü
 if (!process.env.GEMINI_API_KEY) {
@@ -16,8 +17,7 @@ if (!process.env.GEMINI_API_KEY) {
 
 const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY);
 
-// DÜZELTME: SafetySettings (Güvenlik Ayarları) KALDIRILDI.
-// 'gemini-flash-latest' gibi preview modeller bazen ayar gönderilince hata verir.
+// Model ayarı
 const model = genAI.getGenerativeModel({ 
   model: "gemini-flash-latest"
 });
@@ -27,7 +27,12 @@ app.post('/optimize', async (req, res) => {
   try {
     const { contents, systemInstruction } = req.body;
     
-    // Güvenli veri ayıklama
+    // Veri güvenliği: Gelen verinin boş olmadığından emin olalım
+    if (!contents) {
+        throw new Error("Frontend'den 'contents' verisi gelmedi. PDF yüklenmemiş olabilir.");
+    }
+
+    // Promptları ayıkla
     let userPrompt = "";
     if (contents && contents[0] && contents[0].parts && contents[0].parts[0]) {
        userPrompt = contents[0].parts[0].text || "";
@@ -38,29 +43,34 @@ app.post('/optimize', async (req, res) => {
        systemPrompt = systemInstruction.parts[0].text || "";
     }
 
-    // Google'a gönderilecek nihai metni birleştiriyoruz
+    // Google'a gönderilecek metni hazırla
     const finalPrompt = `${systemPrompt}\n\n--------------------------------\n\n${userPrompt}`;
 
-    console.log("Google'a İstek Gönderiliyor (Optimize)...");
+    console.log(`Google'a İstek Atılıyor (Veri boyutu: ${finalPrompt.length} karakter)...`);
 
     const result = await model.generateContent(finalPrompt);
     const response = await result.response;
     const text = response.text();
     
-    // Temizlik
     const cleanText = text.replace(/```json|```/g, '').trim();
     
-    console.log("Cevap Alındı. Uzunluk:", cleanText.length);
+    console.log("✅ Google Cevap Verdi!");
 
     res.json(JSON.parse(cleanText));
 
   } catch (error) {
-    console.error("--- OPTIMIZE HATASI ---");
-    console.error(error.message);
-    // Eğer Google'dan detaylı hata geldiyse onu da yaz
-    if(error.response) console.error(JSON.stringify(error.response));
+    console.error("--- HATA DETAYI ---");
+    // Hatanın en ince detayını konsola yaz
+    console.error(error);
     
-    res.status(500).json({ error: "Sunucu hatası: İşlem başarısız oldu." });
+    // Hatayı Frontend'e gönder ki görebilelim
+    const errorMessage = error.message || "Bilinmeyen bir sunucu hatası";
+    const errorDetails = error.response ? JSON.stringify(error.response) : "";
+    
+    res.status(500).json({ 
+        error: `Sunucu Hatası: ${errorMessage}`,
+        details: errorDetails
+    });
   }
 });
 
@@ -103,9 +113,8 @@ app.post('/interview', async (req, res) => {
     res.json(JSON.parse(cleanText));
 
   } catch (error) {
-    console.error("--- MÜLAKAT HATASI ---");
-    console.error(error.message);
-    res.status(500).json({ error: "Mülakat soruları üretilemedi." });
+    console.error("Mülakat Hatası:", error.message);
+    res.status(500).json({ error: `Mülakat Hatası: ${error.message}` });
   }
 });
 
