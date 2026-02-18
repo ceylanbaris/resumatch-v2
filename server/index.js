@@ -26,8 +26,8 @@ app.post('/optimize', async (req, res) => {
 
     const genAI = new GoogleGenerativeAI(apiKey);
     // Model ismini 'gemini-pro' veya 'gemini-1.5-flash' olarak kullanabilirsin
-    const model = genAI.getGenerativeModel({ model: "gemini-1.5-flash-latest" });
-
+// Listende açıkça görünen, en kararlı ve hızlı model bu:
+const model = genAI.getGenerativeModel({ model: "gemini-2.0-flash" });
     const { contents, systemInstruction } = req.body;
 
     // Prompt'u birleştiriyoruz (System instruction + User content)
@@ -53,5 +53,4 @@ app.post('/optimize', async (req, res) => {
 
 app.listen(port, () => {
   console.log(`Server is running on port ${port}`);
-
 });
