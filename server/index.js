@@ -16,10 +16,9 @@ if (!process.env.GEMINI_API_KEY) {
 
 const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY);
 
-// GÜVENLİK FİLTRELERİNİ KAPATAN MODEL AYARI
-// Not: Model ismini en standart 'gemini-1.5-flash' olarak tutuyoruz.
+// DÜZELTME BURADA: Senin hesabında çalışan 'gemini-flash-latest' modelini geri getirdik.
 const model = genAI.getGenerativeModel({ 
-  model: "gemini-1.5-flash",
+  model: "gemini-flash-latest",
   safetySettings: [
     { category: "HARM_CATEGORY_HARASSMENT", threshold: "BLOCK_NONE" },
     { category: "HARM_CATEGORY_HATE_SPEECH", threshold: "BLOCK_NONE" },
@@ -33,40 +32,39 @@ app.post('/optimize', async (req, res) => {
   try {
     const { contents, systemInstruction } = req.body;
     
-    // --- DÜZELTME BAŞLANGICI ---
-    // Frontend'den gelen karmaşık nesneleri basit metne çeviriyoruz.
-    // Bu sayede "systemInstruction parametresi desteklenmiyor" hatasından kaçınıyoruz.
-    
+    // Güvenli veri ayıklama (Frontend ne gönderirse göndersin patlamaması için)
     let userPrompt = "";
     if (contents && contents[0] && contents[0].parts && contents[0].parts[0]) {
-       userPrompt = contents[0].parts[0].text;
+       userPrompt = contents[0].parts[0].text || "";
     }
 
     let systemPrompt = "";
     if (systemInstruction && systemInstruction.parts && systemInstruction.parts[0]) {
-       systemPrompt = systemInstruction.parts[0].text;
+       systemPrompt = systemInstruction.parts[0].text || "";
     }
 
-    // İkisini tek bir dev metin olarak birleştiriyoruz (En garanti yöntem)
+    // Google'a gönderilecek nihai metni birleştiriyoruz
     const finalPrompt = `${systemPrompt}\n\n--------------------------------\n\n${userPrompt}`;
 
-    console.log("Google'a İstek Gönderiliyor...");
+    console.log("Google'a İstek Gönderiliyor (Optimize)...");
 
     const result = await model.generateContent(finalPrompt);
     const response = await result.response;
     const text = response.text();
     
-    // JSON temizleme
     const cleanText = text.replace(/```json|```/g, '').trim();
     
-    console.log("Google Cevap Verdi. Yanıt uzunluğu:", cleanText.length);
+    console.log("Cevap Başarıyla Alındı.");
 
     res.json(JSON.parse(cleanText));
 
   } catch (error) {
     console.error("--- OPTIMIZE HATASI ---");
-    console.error(error); // Hatanın tamamını loglara bas
-    res.status(500).json({ error: "İşlem başarısız oldu. Sunucu hatası." });
+    console.error(error.message); 
+    // Detaylı hatayı loglayalım ki Render'da görebilelim
+    if (error.response) console.error(JSON.stringify(error.response, null, 2));
+    
+    res.status(500).json({ error: "Sunucu hatası: İşlem başarısız oldu." });
   }
 });
 
@@ -98,17 +96,21 @@ app.post('/interview', async (req, res) => {
         ]
       }
     `;
+    
+    console.log("Google'a İstek Gönderiliyor (Interview)...");
 
     const result = await model.generateContent(prompt);
     const response = await result.response;
     const text = response.text();
     const cleanText = text.replace(/```json|```/g, '').trim();
     
+    console.log("Mülakat Soruları Hazır.");
+    
     res.json(JSON.parse(cleanText));
 
   } catch (error) {
     console.error("--- MÜLAKAT HATASI ---");
-    console.error(error);
+    console.error(error.message);
     res.status(500).json({ error: "Mülakat soruları üretilemedi." });
   }
 });
