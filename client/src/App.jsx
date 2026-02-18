@@ -8,7 +8,8 @@ import {
   ExternalLink, PenTool, Smile, Settings2, XCircle, Lightbulb, Highlighter,
   Bold, Italic, ChevronsUp, ChevronsDown, ScanLine, AlignRight, AlignJustify,
   Undo2, FileSearch, Cpu, PenLine, Loader2,
-  Banknote, Star, Coffee, MousePointer2, Trophy, Search 
+  Banknote, Star, Coffee, MousePointer2, Trophy, Search,
+  MessageSquare, X // YENİ EKLENEN İKONLAR
 } from 'lucide-react';
 
 const STOP_WORDS = [
@@ -96,6 +97,11 @@ const App = () => {
   const [photoPos, setPhotoPos] = useState({ x: 0, y: 0 });
   const [isDragging, setIsDragging] = useState(false);
   const [dragStart, setDragStart] = useState({ x: 0, y: 0 });
+
+  // --- YENİ MÜLAKAT STATE'LERİ ---
+  const [interviewData, setInterviewData] = useState(null);
+  const [isInterviewLoading, setIsInterviewLoading] = useState(false);
+  const [showInterviewModal, setShowInterviewModal] = useState(false);
 
   const fileInputRef = useRef(null);
   const photoInputRef = useRef(null);
@@ -492,7 +498,6 @@ const App = () => {
     const API_URL = 'https://resumatch-backend-zsmt.onrender.com';
    
     try {
-      // DÜZELTME: /api/optimize yerine /optimize endpoint'ine istek atılıyor.
       const response = await fetch(`${API_URL}/optimize`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
@@ -678,6 +683,41 @@ const App = () => {
     }
   };
 
+  // --- YENİ MÜLAKAT FONKSİYONU ---
+  const handleGenerateInterview = async () => {
+    if (!optimizedData || !jobDescription) return;
+    
+    setIsInterviewLoading(true);
+    setShowInterviewModal(true);
+    
+    const cvText = JSON.stringify(optimizedData);
+    
+    try {
+      const API_URL = 'https://resumatch-backend-zsmt.onrender.com';
+      
+      const response = await fetch(`${API_URL}/interview`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          cvContent: cvText,
+          jobDescription: jobDescription
+        })
+      });
+
+      if (!response.ok) throw new Error("Mülakat verisi alınamadı");
+      
+      const data = await response.json();
+      setInterviewData(data);
+      
+    } catch (err) {
+      console.error(err);
+      setError("Mülakat soruları oluşturulurken hata oluştu.");
+      setShowInterviewModal(false);
+    } finally {
+      setIsInterviewLoading(false);
+    }
+  };
+
   const handleAddItem = async () => {
     if (!addItemInput.trim()) return;
     setIsAddingItem(true);
@@ -786,7 +826,6 @@ const App = () => {
       
       const padding = activeTemplate === 'professional' ? '40px' : '32px';
       clone.style.padding = padding;
-      // Düzeltme: Alt dolguyu sıfırlayarak taşmayı engelliyoruz
       clone.style.paddingBottom = '0px'; 
 
       const cloneSpans = clone.querySelectorAll('span');
@@ -904,7 +943,6 @@ const App = () => {
       let position = 0;
       let pageIndex = 0;
 
-      // Düzeltme: 10px'den az kalan kısımları yeni sayfa olarak basma
       while (heightLeft > 10) {
         if (pageIndex > 0) pdf.addPage();
         
@@ -1046,7 +1084,7 @@ const App = () => {
 
   const highlightKeywords = (text) => {
     if (!showHighlights || !text) return text;
-     
+      
     const sourceList = [
       ...(optimizedData?.analysis?.matches || []),
       ...(optimizedData?.analysis?.additions || [])
@@ -1424,9 +1462,19 @@ const App = () => {
               <div className="flex items-center gap-2">
                 <h2 className="font-bold text-slate-500 uppercase tracking-widest text-sm">Canlı Önizleme ({cvLanguage.toUpperCase()})</h2>
               </div>
+              
               <div className="flex gap-2">
                 {optimizedData && !isLoading && (
                   <>
+                     {/* --- YENİ MÜLAKAT BUTONU --- */}
+                    <button 
+                      onClick={handleGenerateInterview} 
+                      className="text-xs bg-purple-600 text-white px-4 py-2 rounded-lg font-bold flex items-center gap-2 shadow-md transition-all hover:bg-purple-700 active:scale-95"
+                      title="Yapay Zeka ile Mülakat Provası"
+                    >
+                      <MessageSquare className="w-4 h-4" /> MÜLAKAT PROVASI
+                    </button>
+
                     <button onClick={copyAsText} className="text-xs bg-slate-900 text-white border border-slate-900 px-4 py-2 rounded-lg font-bold flex items-center gap-2 hover:bg-black transition-colors">{copySuccess ? <CheckCircle2 className="w-4 h-4 text-green-400" /> : <Copy className="w-4 h-4 text-white" />} KOPYALA</button>
                     <button onClick={handleDownloadPdf} disabled={isDownloading} className="text-xs bg-slate-900 text-white px-4 py-2 rounded-lg font-bold flex items-center gap-2 shadow-md transition-all active:scale-95 disabled:opacity-50 hover:bg-black">{isDownloading ? <RefreshCw className="w-4 h-4 animate-spin" /> : <Download className="w-4 h-4" />} PDF İNDİR</button>
                   </>
@@ -1697,46 +1745,46 @@ const App = () => {
                             {/* --- İŞ DENEYİMİ VE DETAYLI CUSTOM BÖLÜMLER --- */}
                             {(sectionId === 'experience' || (sectionId.startsWith('custom_') && optimizedData[sectionId] && typeof optimizedData[sectionId][0] === 'object')) && optimizedData[sectionId].map((exp, idx) => (
                                <div key={`${exp.id || idx}-${showHighlights ? 'hl' : 'no'}`} className="mb-1.5 last:mb-0 relative group/item transition-all duration-500 ease-in-out" draggable onDragStart={(e) => onSubDragStart(e, sectionId, idx)} onDragOver={(e) => onSubDragOver(e, sectionId, idx)} onDragEnd={onSubDragEnd}>
-                                 <div className="absolute -left-4 top-1 opacity-0 group-hover/item:opacity-100 transition-opacity cursor-move p-1 text-slate-300 hover:text-blue-500"><Move className="w-3 h-3" /></div>
-                                 {/* --- YENİ KONUM: İŞ DENEYİMİ SİLME BUTONU SOL TARAFTA (Taşıma ikonunun yanında) --- */}
-                                 <button onClick={() => removeSectionItem(sectionId, idx)} className="absolute -left-9 top-1 p-1 text-red-300 hover:text-red-500 opacity-0 group-hover/item:opacity-100 transition-opacity" title="Bu kaydı sil"><Trash2 className="w-3 h-3" /></button>
-                                 
-                                 <div className="flex justify-between items-baseline mb-0.5">
-                                   <h4 className="font-bold text-[13px] text-slate-900 leading-snug">
-                                     <span className={editableClass} contentEditable suppressContentEditableWarning onBlur={(e) => updateArrayField(sectionId, idx, 'role', e.target.innerText)}>{highlightKeywords(exp.role)}</span>
-                                     {activeTemplate !== 'professional' && <span className={`font-medium text-slate-600 ${editableClass}`} contentEditable suppressContentEditableWarning onBlur={(e) => updateArrayField(sectionId, idx, 'company', e.target.innerText)}>, {exp.company}</span>}
-                                   </h4>
-                                   {/* --- YENİ TARİH ALANI (PLACEHOLDER & SİLME BUTONLU) --- */}
-                                   <div className="flex items-center gap-1 ml-auto flex-shrink-0 relative group/date">
-                                      <span 
-                                          className={`${editableClass} text-[11px] font-bold italic whitespace-nowrap ${!exp.date ? 'text-slate-300 print:hidden' : 'text-slate-500'}`} 
-                                          contentEditable 
-                                          suppressContentEditableWarning 
-                                          onBlur={(e) => updateArrayField(sectionId, idx, 'date', e.target.innerText)}
-                                      >
-                                          {exp.date || "Tarih Ekle"}
-                                      </span>
-                                      {exp.date && (
-                                          <button 
-                                              onClick={() => updateArrayField(sectionId, idx, 'date', '')} 
-                                              className="opacity-0 group-hover/date:opacity-100 text-red-400 hover:text-red-600 transition-opacity absolute -right-4 top-0 p-0.5"
-                                              title="Tarihi Sil"
-                                          >
-                                              <Trash2 className="w-3 h-3"/>
-                                          </button>
-                                      )}
-                                   </div>
-                                 </div>
-                                 {activeTemplate === 'professional' && <p className={`text-[12px] font-semibold text-slate-600 mb-1 ${editableClass}`} contentEditable suppressContentEditableWarning onBlur={(e) => updateArrayField(sectionId, idx, 'company', e.target.innerText)}>{exp.company}</p>}
-                                 <ul className={`list-disc ml-4 space-y-0.5 ${textAlign}`}>
-                                   {getActiveBullets(exp).map((b, bIdx) => (
-                                    <li key={bIdx} className={`text-[11px] text-slate-700 ${editableClass} relative group/subitem pr-6`} contentEditable suppressContentEditableWarning onBlur={(e) => updateBulletPoint(sectionId, idx, bIdx, e.target.innerText)}>
-                                            {highlightKeywords(b)}
-                                            {/* --- YENİ KONUM: BULLET SİLME BUTONU İÇERİDE SAĞDA --- */}
-                                            <button onClick={() => removeBulletPoint(sectionId, idx, bIdx)} className="absolute right-0 top-0 opacity-0 group-hover/subitem:opacity-100 text-red-300 hover:text-red-500 transition-opacity"><Trash2 className="w-3 h-3" /></button>
-                                    </li>
-                                   ))}
-                                 </ul>
+                                  <div className="absolute -left-4 top-1 opacity-0 group-hover/item:opacity-100 transition-opacity cursor-move p-1 text-slate-300 hover:text-blue-500"><Move className="w-3 h-3" /></div>
+                                  {/* --- YENİ KONUM: İŞ DENEYİMİ SİLME BUTONU SOL TARAFTA (Taşıma ikonunun yanında) --- */}
+                                  <button onClick={() => removeSectionItem(sectionId, idx)} className="absolute -left-9 top-1 p-1 text-red-300 hover:text-red-500 opacity-0 group-hover/item:opacity-100 transition-opacity" title="Bu kaydı sil"><Trash2 className="w-3 h-3" /></button>
+                                  
+                                  <div className="flex justify-between items-baseline mb-0.5">
+                                    <h4 className="font-bold text-[13px] text-slate-900 leading-snug">
+                                      <span className={editableClass} contentEditable suppressContentEditableWarning onBlur={(e) => updateArrayField(sectionId, idx, 'role', e.target.innerText)}>{highlightKeywords(exp.role)}</span>
+                                      {activeTemplate !== 'professional' && <span className={`font-medium text-slate-600 ${editableClass}`} contentEditable suppressContentEditableWarning onBlur={(e) => updateArrayField(sectionId, idx, 'company', e.target.innerText)}>, {exp.company}</span>}
+                                    </h4>
+                                    {/* --- YENİ TARİH ALANI (PLACEHOLDER & SİLME BUTONLU) --- */}
+                                    <div className="flex items-center gap-1 ml-auto flex-shrink-0 relative group/date">
+                                       <span 
+                                           className={`${editableClass} text-[11px] font-bold italic whitespace-nowrap ${!exp.date ? 'text-slate-300 print:hidden' : 'text-slate-500'}`} 
+                                           contentEditable 
+                                           suppressContentEditableWarning 
+                                           onBlur={(e) => updateArrayField(sectionId, idx, 'date', e.target.innerText)}
+                                       >
+                                           {exp.date || "Tarih Ekle"}
+                                       </span>
+                                       {exp.date && (
+                                           <button 
+                                               onClick={() => updateArrayField(sectionId, idx, 'date', '')} 
+                                               className="opacity-0 group-hover/date:opacity-100 text-red-400 hover:text-red-600 transition-opacity absolute -right-4 top-0 p-0.5"
+                                               title="Tarihi Sil"
+                                           >
+                                               <Trash2 className="w-3 h-3"/>
+                                           </button>
+                                       )}
+                                    </div>
+                                  </div>
+                                  {activeTemplate === 'professional' && <p className={`text-[12px] font-semibold text-slate-600 mb-1 ${editableClass}`} contentEditable suppressContentEditableWarning onBlur={(e) => updateArrayField(sectionId, idx, 'company', e.target.innerText)}>{exp.company}</p>}
+                                  <ul className={`list-disc ml-4 space-y-0.5 ${textAlign}`}>
+                                    {getActiveBullets(exp).map((b, bIdx) => (
+                                     <li key={bIdx} className={`text-[11px] text-slate-700 ${editableClass} relative group/subitem pr-6`} contentEditable suppressContentEditableWarning onBlur={(e) => updateBulletPoint(sectionId, idx, bIdx, e.target.innerText)}>
+                                              {highlightKeywords(b)}
+                                              {/* --- YENİ KONUM: BULLET SİLME BUTONU İÇERİDE SAĞDA --- */}
+                                              <button onClick={() => removeBulletPoint(sectionId, idx, bIdx)} className="absolute right-0 top-0 opacity-0 group-hover/subitem:opacity-100 text-red-300 hover:text-red-500 transition-opacity"><Trash2 className="w-3 h-3" /></button>
+                                      </li>
+                                    ))}
+                                  </ul>
                                </div>
                             ))}
 
@@ -1751,42 +1799,42 @@ const App = () => {
                                       <span className="font-bold text-slate-900" contentEditable suppressContentEditableWarning onBlur={(e) => updateArrayField('education', idx, 'degree', e.target.innerText)}>{edu.degree}</span>
                                       <span className="mx-1.5 text-slate-300">|</span>
                                       <span className="font-medium text-slate-600" contentEditable suppressContentEditableWarning onBlur={(e) => updateArrayField('education', idx, 'school', e.target.innerText)}>{edu.school}</span>
-                                   </div>
-                                   {/* --- YENİ TARİH ALANI (EĞİTİM İÇİN) --- */}
-                                   <div className="flex items-center gap-1 ml-2 flex-shrink-0 relative group/date">
-                                      <span 
-                                          className={`${editableClass} text-[11px] font-bold italic whitespace-nowrap ${!edu.date ? 'text-slate-300 print:hidden' : 'text-slate-500'}`} 
-                                          contentEditable 
-                                          suppressContentEditableWarning 
-                                          onBlur={(e) => updateArrayField('education', idx, 'date', e.target.innerText)}
-                                      >
-                                          {edu.date || "Tarih Ekle"}
-                                      </span>
-                                      {edu.date && (
-                                          <button 
-                                              onClick={() => updateArrayField('education', idx, 'date', '')} 
-                                              className="opacity-0 group-hover/date:opacity-100 text-red-400 hover:text-red-600 transition-opacity absolute -right-4 top-0 p-0.5"
-                                              title="Tarihi Sil"
-                                          >
-                                              <Trash2 className="w-3 h-3"/>
-                                          </button>
-                                      )}
-                                   </div>
-                                 </div>
-                                 {edu.details && (
-                                    <div className="relative group/desc mt-0.5 pr-6">
-                                            <p className={`text-[10px] text-slate-500 leading-snug ${editableClass} ${textAlign}`} contentEditable suppressContentEditableWarning onBlur={(e) => updateArrayField('education', idx, 'details', e.target.innerText)}>
-                                                {highlightKeywords(edu.details)}
-                                            </p>
-                                            <button 
-                                                onClick={() => updateArrayField('education', idx, 'details', '')}
-                                                className="absolute right-0 top-0 opacity-0 group-hover/desc:opacity-100 text-red-300 hover:text-red-500 transition-opacity"
-                                                title="Açıklamayı Sil"
-                                            >
-                                                <Trash2 className="w-3 h-3" />
-                                            </button>
                                     </div>
-                                 )}
+                                    {/* --- YENİ TARİH ALANI (EĞİTİM İÇİN) --- */}
+                                    <div className="flex items-center gap-1 ml-2 flex-shrink-0 relative group/date">
+                                       <span 
+                                           className={`${editableClass} text-[11px] font-bold italic whitespace-nowrap ${!edu.date ? 'text-slate-300 print:hidden' : 'text-slate-500'}`} 
+                                           contentEditable 
+                                           suppressContentEditableWarning 
+                                           onBlur={(e) => updateArrayField('education', idx, 'date', e.target.innerText)}
+                                       >
+                                           {edu.date || "Tarih Ekle"}
+                                       </span>
+                                       {edu.date && (
+                                           <button 
+                                               onClick={() => updateArrayField('education', idx, 'date', '')} 
+                                               className="opacity-0 group-hover/date:opacity-100 text-red-400 hover:text-red-600 transition-opacity absolute -right-4 top-0 p-0.5"
+                                               title="Tarihi Sil"
+                                           >
+                                               <Trash2 className="w-3 h-3"/>
+                                           </button>
+                                       )}
+                                    </div>
+                                  </div>
+                                  {edu.details && (
+                                     <div className="relative group/desc mt-0.5 pr-6">
+                                              <p className={`text-[10px] text-slate-500 leading-snug ${editableClass} ${textAlign}`} contentEditable suppressContentEditableWarning onBlur={(e) => updateArrayField('education', idx, 'details', e.target.innerText)}>
+                                                  {highlightKeywords(edu.details)}
+                                              </p>
+                                              <button 
+                                                  onClick={() => updateArrayField('education', idx, 'details', '')}
+                                                  className="absolute right-0 top-0 opacity-0 group-hover/desc:opacity-100 text-red-300 hover:text-red-500 transition-opacity"
+                                                  title="Açıklamayı Sil"
+                                              >
+                                                  <Trash2 className="w-3 h-3" />
+                                              </button>
+                                      </div>
+                                  )}
                                </div>
                             ))}
 
@@ -1794,12 +1842,12 @@ const App = () => {
                                <div key={`skills-${showHighlights ? 'hl' : 'no'}`} className="grid grid-cols-4 gap-x-2 gap-y-0.5">
                                  {optimizedData.skills.map((s, i) => (
                                    <div key={i} className={`text-[11px] text-slate-700 flex items-center gap-1 ${editableClass} relative group/item cursor-move leading-normal pr-4`} contentEditable suppressContentEditableWarning onBlur={(e) => updateSimpleList('skills', i, e.target.innerText)} draggable onDragStart={(e) => onSubDragStart(e, 'skills', i)} onDragOver={(e) => onSubDragOver(e, 'skills', i)} onDragEnd={onSubDragEnd}>
-                                     <div className="absolute -left-3 opacity-0 group-hover/item:opacity-100 transition-opacity p-0.5 text-slate-300 hover:text-blue-500"><Move className="w-2.5 h-2.5" /></div>
-                                     {/* --- YENİ KONUM: SKILL SİLME BUTONU İÇERİDE SAĞDA --- */}
-                                     <button onClick={() => removeSectionItem('skills', i)} className="absolute right-0 top-1/2 -translate-y-1/2 opacity-0 group-hover/item:opacity-100 text-red-300 hover:text-red-500 transition-opacity"><Trash2 className="w-3 h-3" /></button>
-                                     <span className="w-1 h-1 rounded-full shrink-0" style={{ backgroundColor: themeColor }}></span> 
-                                     <span className="break-words">{highlightKeywords(s)}</span>
-                                   </div>
+                                      <div className="absolute -left-3 opacity-0 group-hover/item:opacity-100 transition-opacity p-0.5 text-slate-300 hover:text-blue-500"><Move className="w-2.5 h-2.5" /></div>
+                                      {/* --- YENİ KONUM: SKILL SİLME BUTONU İÇERİDE SAĞDA --- */}
+                                      <button onClick={() => removeSectionItem('skills', i)} className="absolute right-0 top-1/2 -translate-y-1/2 opacity-0 group-hover/item:opacity-100 text-red-300 hover:text-red-500 transition-opacity"><Trash2 className="w-3 h-3" /></button>
+                                      <span className="w-1 h-1 rounded-full shrink-0" style={{ backgroundColor: themeColor }}></span> 
+                                      <span className="break-words">{highlightKeywords(s)}</span>
+                                    </div>
                                  ))}
                                </div>
                             )}
@@ -1845,6 +1893,103 @@ const App = () => {
            <button onClick={() => setLastDeletedSection(null)} className="ml-2 text-slate-400 hover:text-white transition-colors">
               <XCircle className="w-5 h-5" />
            </button>
+        </div>
+      )}
+
+      {/* --- AI MÜLAKAT SİMÜLASYONU MODALI (YENİ) --- */}
+      {showInterviewModal && (
+        <div className="fixed inset-0 z-[60] flex items-center justify-center p-4 bg-slate-900/80 backdrop-blur-sm animate-in fade-in duration-300">
+          <div className="bg-white rounded-2xl shadow-2xl w-full max-w-2xl max-h-[90vh] overflow-hidden flex flex-col relative animate-in zoom-in-95 duration-300">
+            
+            {/* Modal Header */}
+            <div className="bg-slate-900 text-white p-6 flex justify-between items-center shrink-0">
+              <div>
+                <h3 className="text-xl font-bold flex items-center gap-2">
+                  <MessageSquare className="w-6 h-6 text-purple-400" /> 
+                  AI Mülakat Simülasyonu
+                </h3>
+                <p className="text-xs text-slate-400 mt-1">Bu CV ve İlana özel oluşturulmuş tahmini sorular</p>
+              </div>
+              <button 
+                onClick={() => setShowInterviewModal(false)} 
+                className="p-2 hover:bg-slate-800 rounded-lg transition-colors"
+              >
+                <X className="w-6 h-6" />
+              </button>
+            </div>
+
+            {/* Modal Body */}
+            <div className="p-6 overflow-y-auto custom-scrollbar">
+              {isInterviewLoading ? (
+                <div className="flex flex-col items-center justify-center py-12 space-y-4">
+                  <div className="relative">
+                    <div className="w-16 h-16 border-4 border-slate-100 border-t-purple-600 rounded-full animate-spin"></div>
+                    <div className="absolute inset-0 flex items-center justify-center">
+                       <Sparkles className="w-6 h-6 text-purple-600 animate-pulse" />
+                    </div>
+                  </div>
+                  <p className="text-slate-600 font-medium animate-pulse">
+                    Mülakat soruları hazırlanıyor...
+                  </p>
+                  <p className="text-xs text-slate-400">CV'nizdeki projeler analiz ediliyor.</p>
+                </div>
+              ) : interviewData ? (
+                <div className="space-y-8">
+                  
+                  {/* Teknik Sorular */}
+                  <div className="space-y-4">
+                    <h4 className="flex items-center gap-2 text-sm font-bold text-blue-700 uppercase tracking-wider border-b border-blue-100 pb-2">
+                      <Cpu className="w-4 h-4" /> Teknik Sorular (Hard Skills)
+                    </h4>
+                    {interviewData.technical.map((item, idx) => (
+                      <div key={idx} className="bg-blue-50/50 p-4 rounded-xl border border-blue-100 hover:border-blue-300 transition-colors">
+                        <p className="font-bold text-slate-800 mb-2 text-sm flex gap-2">
+                          <span className="bg-blue-600 text-white w-5 h-5 flex items-center justify-center rounded-full text-[10px] shrink-0">{idx + 1}</span>
+                          {item.question}
+                        </p>
+                        <div className="flex gap-2 items-start mt-3 bg-white p-3 rounded-lg border border-blue-100">
+                          <Lightbulb className="w-4 h-4 text-amber-500 shrink-0 mt-0.5" />
+                          <p className="text-xs text-slate-600 italic">{item.tip}</p>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+
+                  {/* Davranışsal Sorular */}
+                  <div className="space-y-4">
+                    <h4 className="flex items-center gap-2 text-sm font-bold text-purple-700 uppercase tracking-wider border-b border-purple-100 pb-2">
+                      <User className="w-4 h-4" /> Davranışsal Sorular (Soft Skills)
+                    </h4>
+                    {interviewData.behavioral.map((item, idx) => (
+                      <div key={idx} className="bg-purple-50/50 p-4 rounded-xl border border-purple-100 hover:border-purple-300 transition-colors">
+                        <p className="font-bold text-slate-800 mb-2 text-sm flex gap-2">
+                          <span className="bg-purple-600 text-white w-5 h-5 flex items-center justify-center rounded-full text-[10px] shrink-0">{idx + 1}</span>
+                          {item.question}
+                        </p>
+                        <div className="flex gap-2 items-start mt-3 bg-white p-3 rounded-lg border border-purple-100">
+                          <Lightbulb className="w-4 h-4 text-amber-500 shrink-0 mt-0.5" />
+                          <p className="text-xs text-slate-600 italic">{item.tip}</p>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+
+                </div>
+              ) : (
+                <div className="text-center text-red-500 py-10">Bir hata oluştu. Lütfen tekrar deneyin.</div>
+              )}
+            </div>
+
+            {/* Modal Footer */}
+            <div className="p-4 border-t bg-slate-50 flex justify-end">
+               <button 
+                onClick={() => setShowInterviewModal(false)}
+                className="bg-slate-900 text-white px-6 py-2 rounded-lg font-bold hover:bg-slate-800 transition-colors text-xs"
+               >
+                 KAPAT
+               </button>
+            </div>
+          </div>
         </div>
       )}
 
