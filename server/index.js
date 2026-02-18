@@ -16,15 +16,10 @@ if (!process.env.GEMINI_API_KEY) {
 
 const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY);
 
-// DÜZELTME BURADA: Senin hesabında çalışan 'gemini-flash-latest' modelini geri getirdik.
+// DÜZELTME: SafetySettings (Güvenlik Ayarları) KALDIRILDI.
+// 'gemini-flash-latest' gibi preview modeller bazen ayar gönderilince hata verir.
 const model = genAI.getGenerativeModel({ 
-  model: "gemini-flash-latest",
-  safetySettings: [
-    { category: "HARM_CATEGORY_HARASSMENT", threshold: "BLOCK_NONE" },
-    { category: "HARM_CATEGORY_HATE_SPEECH", threshold: "BLOCK_NONE" },
-    { category: "HARM_CATEGORY_SEXUALLY_EXPLICIT", threshold: "BLOCK_NONE" },
-    { category: "HARM_CATEGORY_DANGEROUS_CONTENT", threshold: "BLOCK_NONE" },
-  ]
+  model: "gemini-flash-latest"
 });
 
 // 1. CV Optimize Etme Endpoint'i
@@ -32,7 +27,7 @@ app.post('/optimize', async (req, res) => {
   try {
     const { contents, systemInstruction } = req.body;
     
-    // Güvenli veri ayıklama (Frontend ne gönderirse göndersin patlamaması için)
+    // Güvenli veri ayıklama
     let userPrompt = "";
     if (contents && contents[0] && contents[0].parts && contents[0].parts[0]) {
        userPrompt = contents[0].parts[0].text || "";
@@ -52,17 +47,18 @@ app.post('/optimize', async (req, res) => {
     const response = await result.response;
     const text = response.text();
     
+    // Temizlik
     const cleanText = text.replace(/```json|```/g, '').trim();
     
-    console.log("Cevap Başarıyla Alındı.");
+    console.log("Cevap Alındı. Uzunluk:", cleanText.length);
 
     res.json(JSON.parse(cleanText));
 
   } catch (error) {
     console.error("--- OPTIMIZE HATASI ---");
-    console.error(error.message); 
-    // Detaylı hatayı loglayalım ki Render'da görebilelim
-    if (error.response) console.error(JSON.stringify(error.response, null, 2));
+    console.error(error.message);
+    // Eğer Google'dan detaylı hata geldiyse onu da yaz
+    if(error.response) console.error(JSON.stringify(error.response));
     
     res.status(500).json({ error: "Sunucu hatası: İşlem başarısız oldu." });
   }
@@ -97,14 +93,12 @@ app.post('/interview', async (req, res) => {
       }
     `;
     
-    console.log("Google'a İstek Gönderiliyor (Interview)...");
+    console.log("Mülakat İsteği Gönderiliyor...");
 
     const result = await model.generateContent(prompt);
     const response = await result.response;
     const text = response.text();
     const cleanText = text.replace(/```json|```/g, '').trim();
-    
-    console.log("Mülakat Soruları Hazır.");
     
     res.json(JSON.parse(cleanText));
 
