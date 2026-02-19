@@ -6,10 +6,9 @@ const app = express();
 const PORT = process.env.PORT || 5000;
 
 app.use(cors());
-app.use(express.json({ limit: '10mb' })); 
+app.use(express.json({ limit: '50mb' })); 
 
-// --- DİKKAT: Render'daki değişken isimlerini birebir buraya yazdım ---
-// process.env['...'] şeklinde yazmamızın sebebi, isminde nokta (ogr.sakarya) olmasıdır.
+// Render'daki API key isimlerini birebir alıyoruz
 const apiKeys = [
   process.env.GEMINI_API_KEY_bcey2603,
   process.env.GEMINI_API_KEY_bceylannn,
@@ -20,9 +19,8 @@ let currentKeyIndex = 0;
 
 function getNextApiKey() {
   if (apiKeys.length === 0) {
-    throw new Error("API anahtarı bulunamadı! Lütfen Render Environment Variables kısmını kontrol edin.");
+    return null;
   }
-  
   const key = apiKeys[currentKeyIndex];
   const usedIndex = currentKeyIndex + 1; 
   
@@ -34,8 +32,12 @@ function getNextApiKey() {
 
 app.post('/optimize', async (req, res) => {
   try {
-    // Sıradaki anahtarı al
     const keyData = getNextApiKey();
+    
+    if (!keyData) {
+      return res.status(500).json({ error: "Sunucuda API anahtarı bulunamadı. Lütfen Render ayarlarını kontrol edin." });
+    }
+
     console.log(`[İSTEK ALINDI] Kullanılan Key Havuzu: #${keyData.number} (Toplam: ${apiKeys.length})`);
 
     const googleApiUrl = `https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${keyData.key}`;
@@ -63,10 +65,11 @@ app.post('/optimize', async (req, res) => {
   }
 });
 
+// Sunucunun durumunu test etmek için kök dizin
 app.get('/', (req, res) => {
-  res.send(`Resumatch Backend Aktif! Yüklü API Anahtarı Sayısı: ${apiKeys.length}`);
+  res.send(`🚀 Resumatch Backend Aktif! Yüklü API Anahtarı Sayısı: ${apiKeys.length}`);
 });
 
 app.listen(PORT, () => {
-  console.log(`🚀 Backend Sunucusu ${PORT} portunda başarıyla başlatıldı.`);
+  console.log(`Backend Sunucusu ${PORT} portunda başarıyla başlatıldı.`);
 });
