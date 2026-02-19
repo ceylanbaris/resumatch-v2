@@ -8,8 +8,6 @@ const PORT = process.env.PORT || 5000;
 app.use(cors());
 app.use(express.json({ limit: '50mb' })); 
 
-// 🚨 HAYAT KURTARAN DÜZELTME: .map(key => key.trim()) 
-// Bu kod, Render'a kopyalarken yanlışlıkla eklenen görünmez boşlukları ve enter'ları silerek linkin bozulmasını engeller.
 const apiKeys = [
   process.env.GEMINI_API_KEY_bcey2603,
   process.env.GEMINI_API_KEY_bceylannn,
@@ -19,15 +17,12 @@ const apiKeys = [
 let currentKeyIndex = 0;
 
 function getNextApiKey() {
-  if (apiKeys.length === 0) {
-    return null;
-  }
+  if (apiKeys.length === 0) return null;
+  
   const key = apiKeys[currentKeyIndex];
   const usedIndex = currentKeyIndex + 1; 
   
-  // İndeksi bir sonraki anahtara kaydır (Başa sarar)
   currentKeyIndex = (currentKeyIndex + 1) % apiKeys.length;
-  
   return { key, number: usedIndex };
 }
 
@@ -36,12 +31,13 @@ app.post('/optimize', async (req, res) => {
     const keyData = getNextApiKey();
     
     if (!keyData) {
-      return res.status(500).json({ error: "Sunucuda API anahtarı bulunamadı. Lütfen Render ayarlarını kontrol edin." });
+      return res.status(500).json({ error: "Sunucuda API anahtarı bulunamadı." });
     }
 
-    console.log(`[İSTEK ALINDI] Kullanılan Key Havuzu: #${keyData.number} (Toplam: ${apiKeys.length})`);
+    console.log(`[İSTEK ALINDI] Key #${keyData.number} kullanılıyor...`);
 
-    const googleApiUrl = `https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${keyData.key}`;
+    // 🚨 ÇÖZÜM BURADA: Model ismini 'gemini-1.5-flash-latest' olarak güncelledik (404 hatasını çözer)
+    const googleApiUrl = `https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash-latest:generateContent?key=${keyData.key}`;
 
     const response = await fetch(googleApiUrl, {
       method: 'POST',
@@ -51,15 +47,17 @@ app.post('/optimize', async (req, res) => {
       body: JSON.stringify(req.body) 
     });
 
-    // Eğer Google bir hata gönderirse, konsolda tam sebebini görebilmek için datayı yakalıyoruz.
     const data = await response.json().catch(() => null);
 
     if (!response.ok) {
-      console.error(`[API HATASI] Key #${keyData.number} Google'dan HATA aldı! Status: ${response.status}`, data);
-      return res.status(response.status).json(data || { error: "Bilinmeyen Google API Hatası" });
+      // 🚨 ÇÖZÜM BURADA: [object Object] hatasını önlemek için gelen JSON'u düz metne (string) çeviriyoruz
+      const errorMessage = data?.error?.message || "Google API sunucularına ulaşılamadı (404).";
+      console.error(`[API HATASI] Key #${keyData.number} Hata Sebebi:`, errorMessage);
+      
+      return res.status(response.status).json({ error: errorMessage });
     }
 
-    console.log(`[BAŞARILI] Key #${keyData.number} ile işlem kusursuz tamamlandı!`);
+    console.log(`[BAŞARILI] Key #${keyData.number} ile CV/Mülakat başarıyla üretildi!`);
     return res.json(data);
 
   } catch (error) {
@@ -68,11 +66,10 @@ app.post('/optimize', async (req, res) => {
   }
 });
 
-// Sunucunun durumunu test etmek için kök dizin
 app.get('/', (req, res) => {
-  res.send(`🚀 Resumatch Backend Aktif! Yüklü Temiz API Anahtarı Sayısı: ${apiKeys.length}`);
+  res.send(`🚀 Resumatch Backend Aktif! Yüklü Temiz Anahtar Sayısı: ${apiKeys.length}`);
 });
 
 app.listen(PORT, () => {
-  console.log(`🚀 Backend Sunucusu ${PORT} portunda başarıyla başlatıldı.`);
+  console.log(`🚀 Backend Sunucusu ${PORT} portunda başlatıldı.`);
 });
