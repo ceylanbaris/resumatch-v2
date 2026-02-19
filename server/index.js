@@ -36,8 +36,8 @@ app.post('/optimize', async (req, res) => {
 
     console.log(`[İSTEK ALINDI] Key #${keyData.number} kullanılıyor...`);
 
-    // 🚨 ÇÖZÜM BURADA: Model ismini 'gemini-1.5-flash-latest' olarak güncelledik (404 hatasını çözer)
-    const googleApiUrl = `https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash-latest:generateContent?key=${keyData.key}`;
+    // 🚨 ZAFER SATIRI: '-latest' ekini sildik, orijinal model adını bıraktık.
+    const googleApiUrl = `https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${keyData.key}`;
 
     const response = await fetch(googleApiUrl, {
       method: 'POST',
@@ -50,7 +50,6 @@ app.post('/optimize', async (req, res) => {
     const data = await response.json().catch(() => null);
 
     if (!response.ok) {
-      // 🚨 ÇÖZÜM BURADA: [object Object] hatasını önlemek için gelen JSON'u düz metne (string) çeviriyoruz
       const errorMessage = data?.error?.message || "Google API sunucularına ulaşılamadı (404).";
       console.error(`[API HATASI] Key #${keyData.number} Hata Sebebi:`, errorMessage);
       
