@@ -8,12 +8,13 @@ const PORT = process.env.PORT || 5000;
 app.use(cors());
 app.use(express.json({ limit: '50mb' })); 
 
-// Render'daki API key isimlerini birebir alıyoruz
+// 🚨 HAYAT KURTARAN DÜZELTME: .map(key => key.trim()) 
+// Bu kod, Render'a kopyalarken yanlışlıkla eklenen görünmez boşlukları ve enter'ları silerek linkin bozulmasını engeller.
 const apiKeys = [
   process.env.GEMINI_API_KEY_bcey2603,
   process.env.GEMINI_API_KEY_bceylannn,
   process.env['GEMINI_API_KEY_ogr.sakarya']
-].filter(Boolean);
+].filter(Boolean).map(key => key.trim());
 
 let currentKeyIndex = 0;
 
@@ -50,13 +51,15 @@ app.post('/optimize', async (req, res) => {
       body: JSON.stringify(req.body) 
     });
 
-    const data = await response.json();
+    // Eğer Google bir hata gönderirse, konsolda tam sebebini görebilmek için datayı yakalıyoruz.
+    const data = await response.json().catch(() => null);
 
     if (!response.ok) {
-      console.error(`[API HATASI] Key #${keyData.number} hata verdi! Status: ${response.status}`);
-      return res.status(response.status).json(data);
+      console.error(`[API HATASI] Key #${keyData.number} Google'dan HATA aldı! Status: ${response.status}`, data);
+      return res.status(response.status).json(data || { error: "Bilinmeyen Google API Hatası" });
     }
 
+    console.log(`[BAŞARILI] Key #${keyData.number} ile işlem kusursuz tamamlandı!`);
     return res.json(data);
 
   } catch (error) {
@@ -67,9 +70,9 @@ app.post('/optimize', async (req, res) => {
 
 // Sunucunun durumunu test etmek için kök dizin
 app.get('/', (req, res) => {
-  res.send(`🚀 Resumatch Backend Aktif! Yüklü API Anahtarı Sayısı: ${apiKeys.length}`);
+  res.send(`🚀 Resumatch Backend Aktif! Yüklü Temiz API Anahtarı Sayısı: ${apiKeys.length}`);
 });
 
 app.listen(PORT, () => {
-  console.log(`Backend Sunucusu ${PORT} portunda başarıyla başlatıldı.`);
+  console.log(`🚀 Backend Sunucusu ${PORT} portunda başarıyla başlatıldı.`);
 });
