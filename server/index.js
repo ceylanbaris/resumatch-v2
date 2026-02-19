@@ -1,5 +1,7 @@
 const express = require('express');
 const cors = require('cors');
+// 🚨 ÇÖZÜM: Direkt link yerine Google'ın resmi kütüphanesini kullanıyoruz
+const { GoogleGenerativeAI } = require('@google/generative-ai');
 require('dotenv').config();
 
 const app = express();
@@ -18,10 +20,8 @@ let currentKeyIndex = 0;
 
 function getNextApiKey() {
   if (apiKeys.length === 0) return null;
-  
   const key = apiKeys[currentKeyIndex];
   const usedIndex = currentKeyIndex + 1; 
-  
   currentKeyIndex = (currentKeyIndex + 1) % apiKeys.length;
   return { key, number: usedIndex };
 }
@@ -29,39 +29,55 @@ function getNextApiKey() {
 app.post('/optimize', async (req, res) => {
   try {
     const keyData = getNextApiKey();
-    
     if (!keyData) {
       return res.status(500).json({ error: "Sunucuda API anahtarı bulunamadı." });
     }
 
     console.log(`[İSTEK ALINDI] Key #${keyData.number} kullanılıyor...`);
 
-    // 🚨 ZAFER SATIRI: '-latest' ekini sildik, orijinal model adını bıraktık.
-    const googleApiUrl = `https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${keyData.key}`;
-
-    const response = await fetch(googleApiUrl, {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify(req.body) 
-    });
-
-    const data = await response.json().catch(() => null);
-
-    if (!response.ok) {
-      const errorMessage = data?.error?.message || "Google API sunucularına ulaşılamadı (404).";
-      console.error(`[API HATASI] Key #${keyData.number} Hata Sebebi:`, errorMessage);
-      
-      return res.status(response.status).json({ error: errorMessage });
+    // Kütüphaneyi sıradaki anahtar ile başlatıyoruz
+    const genAI = new GoogleGenerativeAI(keyData.key);
+    
+    // Modeli ve sistem komutlarını güvenli bir şekilde hazırlıyoruz
+    let modelConfig = { model: "gemini-1.5-flash" };
+    if (req.body.systemInstruction && req.body.systemInstruction.parts && req.body.systemInstruction.parts.length > 0) {
+        modelConfig.systemInstruction = req.body.systemInstruction.parts[0].text;
     }
 
-    console.log(`[BAŞARILI] Key #${keyData.number} ile CV/Mülakat başarıyla üretildi!`);
-    return res.json(data);
+    const model = genAI.getGenerativeModel(modelConfig);
+
+    // JSON formatı isteniyorsa ayarı ekliyoruz
+    let reqConfig = {};
+    if (req.body.generationConfig) {
+        reqConfig = req.body.generationConfig;
+    }
+
+    // İsteği Google'a gönderiyoruz
+    const result = await model.generateContent({
+        contents: req.body.contents,
+        generationConfig: reqConfig
+    });
+
+    const responseText = result.response.text();
+
+    console.log(`[BAŞARILI] Key #${keyData.number} ile işlem tamamlandı!`);
+    
+    // React (Frontend) tarafını bozmamak için orijinal formata uygun yanıt dönüyoruz
+    return res.json({
+        candidates: [
+            {
+                content: {
+                    parts: [{ text: responseText }]
+                }
+            }
+        ]
+    });
 
   } catch (error) {
-    console.error("[SUNUCU HATASI]:", error.message);
-    return res.status(500).json({ error: "Sunucu tarafında beklenmedik bir hata oluştu." });
+    // Kaçıncı anahtarın hata verdiğini net görmek için:
+    let errorKeyNum = currentKeyIndex === 0 ? apiKeys.length : currentKeyIndex;
+    console.error(`[API HATASI] Key #${errorKeyNum}:`, error.message);
+    return res.status(500).json({ error: error.message || "Google API Hatası" });
   }
 });
 
