@@ -16,13 +16,10 @@ app.post('/optimize', async (req, res) => {
 
     const cleanKey = rawKey.replace(/['"]/g, '').trim();
     const genAI = new GoogleGenerativeAI(cleanKey);
-    
-    // 🏆 İŞTE ZAFER SATIRI: Silinen 1.5 modeli yerine yepyeni 'gemini-2.5-flash' modeline geçtik!
     const model = genAI.getGenerativeModel({ model: "gemini-2.5-flash" });
 
     let promptData = req.body.contents;
     
-    // React'tan gelen komutları yeni modelin de anlayacağı mükemmel formata çeviriyoruz
     if (req.body.systemInstruction && req.body.systemInstruction.parts) {
         const sysText = req.body.systemInstruction.parts[0].text;
         promptData = [
@@ -31,13 +28,21 @@ app.post('/optimize', async (req, res) => {
         ];
     }
 
+    // 🚨 1. ZORUNLULUK: Google'a sadece ve sadece "application/json" formatında yanıt vermesini emrediyoruz.
+    let reqConfig = req.body.generationConfig || {};
+    reqConfig.responseMimeType = "application/json";
+
     const result = await model.generateContent({
         contents: promptData,
-        generationConfig: req.body.generationConfig || {}
+        generationConfig: reqConfig
     });
     
+    // 🚨 2. TEMİZLİK: Olur da Google yine "```json" gibi markdown işaretleri koyarsa, React çökmesin diye o işaretleri metinden siliyoruz.
+    let responseText = result.response.text();
+    responseText = responseText.replace(/```json/g, '').replace(/```/g, '').trim();
+
     return res.json({
-        candidates: [{ content: { parts: [{ text: result.response.text() }] } }]
+        candidates: [{ content: { parts: [{ text: responseText }] } }]
     });
 
   } catch (error) {
