@@ -9,70 +9,60 @@ const PORT = process.env.PORT || 5000;
 app.use(cors());
 app.use(express.json({ limit: '50mb' })); 
 
-// 🚨 HAYAT KURTARAN DÜZELTME 🚨
-// 1. Eskiden çalışan orijinal GEMINI_API_KEY'ini de listeye ekledik.
-// 2. Yanlışlıkla girilen boş şifreleri (10 karakterden kısaysa) otomatik siliyoruz.
-const apiKeys = [
-  process.env.GEMINI_API_KEY, // Eskiden çalışan orijinal şifren!
-  process.env.GEMINI_API_KEY_bcey2603,
-  process.env.GEMINI_API_KEY_bceylannn,
-  process.env['GEMINI_API_KEY_ogr.sakarya']
-]
-.map(key => key ? key.replace(/['"]/g, '').trim() : '')
-.filter(key => key.length > 10); 
-
-let currentKeyIndex = 0;
-
-function getNextApiKey() {
-  if (apiKeys.length === 0) return null;
-  const key = apiKeys[currentKeyIndex];
-  const usedIndex = currentKeyIndex + 1; 
-  currentKeyIndex = (currentKeyIndex + 1) % apiKeys.length;
-  return { key, number: usedIndex };
-}
-
 app.post('/optimize', async (req, res) => {
   try {
-    const keyData = getNextApiKey();
-    if (!keyData) {
-      return res.status(500).json({ error: "Sunucuda API anahtarı bulunamadı." });
+    // Sadece Render'a az önce eklediğin temiz anahtarı alıyoruz
+    const rawKey = process.env.GEMINI_API_KEY;
+    
+    if (!rawKey) {
+      return res.status(500).json({ error: "Backend'de API Anahtarı bulunamadı. Lütfen Render ayarlarını kontrol edin." });
     }
 
-    // Şifrenin son 4 harfini yazdırıyoruz ki loglarda hangi şifrenin patladığını görelim
-    console.log(`[İSTEK ALINDI] Key #${keyData.number} deneniyor... (Şifre sonu: ...${keyData.key.slice(-4)})`);
+    // Olası boşluk ve tırnak hatalarını siliyoruz
+    const cleanKey = rawKey.replace(/['"]/g, '').trim();
+    console.log(`[İSTEK BAŞLADI] API Anahtarı kullanılıyor (Sonu: ...${cleanKey.slice(-4)})`);
 
-    const genAI = new GoogleGenerativeAI(keyData.key);
-    
-    // Doğrudan en güncel ve sorunsuz modeli kullanıyoruz (Yedek modele geçmiyoruz ki 404 almayalım)
-    const modelConfig = { model: "gemini-1.5-flash" };
-    
-    if (req.body.systemInstruction && req.body.systemInstruction.parts && req.body.systemInstruction.parts.length > 0) {
-        modelConfig.systemInstruction = req.body.systemInstruction.parts[0].text;
+    const genAI = new GoogleGenerativeAI(cleanKey);
+    const model = genAI.getGenerativeModel({ model: "gemini-1.5-flash" });
+
+    // React'tan gelen verileri Google'ın anlayacağı en güvenli formata çeviriyoruz
+    let promptData = req.body.contents;
+    if (req.body.systemInstruction && req.body.systemInstruction.parts) {
+        const sysText = req.body.systemInstruction.parts[0].text;
+        promptData = [
+            { role: "user", parts: [{ text: `AŞAĞIDAKİ SİSTEM KOMUTLARINA KESİNLİKLE UY:\n${sysText}\n\n---\nKULLANICI VERİSİ:\n` }] },
+            ...req.body.contents
+        ];
     }
 
-    const model = genAI.getGenerativeModel(modelConfig);
-
+    // Google'a gönderiyoruz
     const result = await model.generateContent({
-        contents: req.body.contents,
+        contents: promptData,
         generationConfig: req.body.generationConfig || {}
     });
 
-    const responseText = result.response.text();
-    console.log(`[BAŞARILI] Key #${keyData.number} ile işlem kusursuz tamamlandı!`);
+    console.log("[BAŞARILI] İşlem tamamlandı, veriler React'a gönderiliyor!");
     
     return res.json({
-        candidates: [{ content: { parts: [{ text: responseText }] } }]
+        candidates: [{ content: { parts: [{ text: result.response.text() }] } }]
     });
 
   } catch (error) {
-    let errorKeyNum = currentKeyIndex === 0 ? apiKeys.length : currentKeyIndex;
-    console.error(`[API HATASI] Key #${errorKeyNum} arızalı:`, error.message);
-    return res.status(500).json({ error: error.message || "Google API Hatası" });
+    console.error(`[SİSTEM HATASI]:`, error.message);
+    
+    // Eğer Google yine hesabını engellerse (404), bu kez ekranda [Object object] yerine bu Türkçe yazıyı göreceksin:
+    if (error.message.includes('404')) {
+        return res.status(500).json({ 
+            error: "Google, kullandığınız API anahtarına (Hesaba) erişim izni vermiyor. Lütfen okul hesabı yerine kişisel bir Gmail hesabı ile API şifresi alın." 
+        });
+    }
+    
+    return res.status(500).json({ error: error.message || "Bilinmeyen bir hata oluştu." });
   }
 });
 
 app.get('/', (req, res) => {
-  res.send(`🚀 Resumatch Backend Aktif! Yüklü Geçerli Anahtar Sayısı: ${apiKeys.length}`);
+  res.send("🚀 Resumatch Backend Kusursuz Çalışıyor!");
 });
 
 app.listen(PORT, () => {
