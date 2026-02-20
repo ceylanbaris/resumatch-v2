@@ -9,12 +9,17 @@ const PORT = process.env.PORT || 5000;
 app.use(cors());
 app.use(express.json({ limit: '50mb' })); 
 
-// Şifrelerdeki olası tırnak ve boşlukları tertemiz yapıyoruz
+// 🚨 HAYAT KURTARAN DÜZELTME 🚨
+// 1. Eskiden çalışan orijinal GEMINI_API_KEY'ini de listeye ekledik.
+// 2. Yanlışlıkla girilen boş şifreleri (10 karakterden kısaysa) otomatik siliyoruz.
 const apiKeys = [
+  process.env.GEMINI_API_KEY, // Eskiden çalışan orijinal şifren!
   process.env.GEMINI_API_KEY_bcey2603,
   process.env.GEMINI_API_KEY_bceylannn,
   process.env['GEMINI_API_KEY_ogr.sakarya']
-].filter(Boolean).map(key => key.replace(/['"]/g, '').trim());
+]
+.map(key => key ? key.replace(/['"]/g, '').trim() : '')
+.filter(key => key.length > 10); 
 
 let currentKeyIndex = 0;
 
@@ -26,30 +31,6 @@ function getNextApiKey() {
   return { key, number: usedIndex };
 }
 
-// Yeni: İstek atma fonksiyonunu ayırdık ki hata alırsak başka modelle tekrar deneyebilelim
-async function tryGenerate(genAI, modelName, reqBody) {
-    const model = genAI.getGenerativeModel({ model: modelName });
-    
-    let reqConfig = reqBody.generationConfig || {};
-    let promptData = reqBody.contents;
-
-    // Sistem komutlarını, eski modellerin de anlayacağı şekle çeviriyoruz
-    if (reqBody.systemInstruction && reqBody.systemInstruction.parts) {
-        const sysText = reqBody.systemInstruction.parts[0].text;
-        promptData = [
-            { role: "user", parts: [{ text: `AŞAĞIDAKİ SİSTEM KOMUTUNA KESİNLİKLE UY:\n${sysText}\n\n---\nKULLANICI VERİSİ:\n` }] },
-            ...reqBody.contents
-        ];
-    }
-
-    const result = await model.generateContent({
-        contents: promptData,
-        generationConfig: reqConfig
-    });
-
-    return result.response.text();
-}
-
 app.post('/optimize', async (req, res) => {
   try {
     const keyData = getNextApiKey();
@@ -57,41 +38,41 @@ app.post('/optimize', async (req, res) => {
       return res.status(500).json({ error: "Sunucuda API anahtarı bulunamadı." });
     }
 
-    console.log(`[İSTEK ALINDI] Key #${keyData.number} kullanılıyor...`);
+    // Şifrenin son 4 harfini yazdırıyoruz ki loglarda hangi şifrenin patladığını görelim
+    console.log(`[İSTEK ALINDI] Key #${keyData.number} deneniyor... (Şifre sonu: ...${keyData.key.slice(-4)})`);
+
     const genAI = new GoogleGenerativeAI(keyData.key);
     
-    let responseText;
+    // Doğrudan en güncel ve sorunsuz modeli kullanıyoruz (Yedek modele geçmiyoruz ki 404 almayalım)
+    const modelConfig = { model: "gemini-1.5-flash" };
     
-    try {
-        // 1. AŞAMA: Önce en hızlı ve güncel model olan 1.5-flash'ı deniyoruz
-        responseText = await tryGenerate(genAI, "gemini-1.5-flash", req.body);
-        console.log(`[BAŞARILI] Key #${keyData.number} -> gemini-1.5-flash ile üretti!`);
-    } catch (modelError) {
-        // 2. AŞAMA: Eğer bu hesaba 1.5-flash kapalıysa (404 hatası dönerse), anında her hesapta çalışan 'gemini-pro'ya geç!
-        if (modelError.message.includes('404') || modelError.message.includes('not found')) {
-            console.log(`[MODEL DEĞİŞİMİ] Key #${keyData.number} için 1.5-flash kapalı, yedek model (gemini-pro) deneniyor...`);
-            responseText = await tryGenerate(genAI, "gemini-pro", req.body);
-            console.log(`[BAŞARILI] Key #${keyData.number} -> gemini-pro ile üretti!`);
-        } else {
-            // Kota dolması (429) gibi başka bir hataysa işlemi durdur
-            throw modelError; 
-        }
+    if (req.body.systemInstruction && req.body.systemInstruction.parts && req.body.systemInstruction.parts.length > 0) {
+        modelConfig.systemInstruction = req.body.systemInstruction.parts[0].text;
     }
+
+    const model = genAI.getGenerativeModel(modelConfig);
+
+    const result = await model.generateContent({
+        contents: req.body.contents,
+        generationConfig: req.body.generationConfig || {}
+    });
+
+    const responseText = result.response.text();
+    console.log(`[BAŞARILI] Key #${keyData.number} ile işlem kusursuz tamamlandı!`);
     
-    // İşlem başarılıysa sonucu React'a (Frontend'e) yolla
     return res.json({
         candidates: [{ content: { parts: [{ text: responseText }] } }]
     });
 
   } catch (error) {
     let errorKeyNum = currentKeyIndex === 0 ? apiKeys.length : currentKeyIndex;
-    console.error(`[API HATASI] Key #${errorKeyNum}:`, error.message);
+    console.error(`[API HATASI] Key #${errorKeyNum} arızalı:`, error.message);
     return res.status(500).json({ error: error.message || "Google API Hatası" });
   }
 });
 
 app.get('/', (req, res) => {
-  res.send(`🚀 Resumatch Backend Aktif! Yüklü Temiz Anahtar Sayısı: ${apiKeys.length}`);
+  res.send(`🚀 Resumatch Backend Aktif! Yüklü Geçerli Anahtar Sayısı: ${apiKeys.length}`);
 });
 
 app.listen(PORT, () => {
