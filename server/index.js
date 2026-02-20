@@ -9,62 +9,54 @@ const PORT = process.env.PORT || 5000;
 app.use(cors());
 app.use(express.json({ limit: '50mb' })); 
 
-app.post('/optimize', async (req, res) => {
+// 🚨 1. KESİN TEŞHİS ENDPOINT'İ (React'ı tamamen devre dışı bırakıp test edeceğiz)
+app.get('/test-api', async (req, res) => {
   try {
-    // Sadece Render'a az önce eklediğin temiz anahtarı alıyoruz
     const rawKey = process.env.GEMINI_API_KEY;
-    
-    if (!rawKey) {
-      return res.status(500).json({ error: "Backend'de API Anahtarı bulunamadı. Lütfen Render ayarlarını kontrol edin." });
-    }
+    if (!rawKey) return res.send("<h1>HATA:</h1><p>Render'da GEMINI_API_KEY bulunamadı!</p>");
 
-    // Olası boşluk ve tırnak hatalarını siliyoruz
     const cleanKey = rawKey.replace(/['"]/g, '').trim();
-    console.log(`[İSTEK BAŞLADI] API Anahtarı kullanılıyor (Sonu: ...${cleanKey.slice(-4)})`);
-
     const genAI = new GoogleGenerativeAI(cleanKey);
     const model = genAI.getGenerativeModel({ model: "gemini-1.5-flash" });
 
-    // React'tan gelen verileri Google'ın anlayacağı en güvenli formata çeviriyoruz
-    let promptData = req.body.contents;
-    if (req.body.systemInstruction && req.body.systemInstruction.parts) {
-        const sysText = req.body.systemInstruction.parts[0].text;
-        promptData = [
-            { role: "user", parts: [{ text: `AŞAĞIDAKİ SİSTEM KOMUTLARINA KESİNLİKLE UY:\n${sysText}\n\n---\nKULLANICI VERİSİ:\n` }] },
-            ...req.body.contents
-        ];
+    // React'tan bağımsız, sadece sunucu üzerinden basit bir "Merhaba" yolluyoruz
+    const result = await model.generateContent("Merhaba, sistem çalışıyor mu? Kısa cevap ver.");
+    res.send(`<h1>🎉 BAŞARILI! API KUSURSUZ ÇALIŞIYOR:</h1><p>${result.response.text()}</p>`);
+  } catch (error) {
+    res.send(`<h1>🚨 API HATASI:</h1><p>${error.message}</p>`);
+  }
+});
+
+// 2. ANA UYGULAMA ENDPOINT'İ (Orijinal hatayı gizlemeden ekrana basacak şekilde güncelledik)
+app.post('/optimize', async (req, res) => {
+  try {
+    const cleanKey = process.env.GEMINI_API_KEY.replace(/['"]/g, '').trim();
+    const genAI = new GoogleGenerativeAI(cleanKey);
+
+    // React'tan gelen verileri doğrudan modele veriyoruz
+    const modelConfig = { model: "gemini-1.5-flash" };
+    if (req.body.systemInstruction) {
+        modelConfig.systemInstruction = req.body.systemInstruction;
     }
 
-    // Google'a gönderiyoruz
+    const model = genAI.getGenerativeModel(modelConfig);
+
     const result = await model.generateContent({
-        contents: promptData,
+        contents: req.body.contents,
         generationConfig: req.body.generationConfig || {}
     });
 
-    console.log("[BAŞARILI] İşlem tamamlandı, veriler React'a gönderiliyor!");
-    
     return res.json({
         candidates: [{ content: { parts: [{ text: result.response.text() }] } }]
     });
 
   } catch (error) {
-    console.error(`[SİSTEM HATASI]:`, error.message);
-    
-    // Eğer Google yine hesabını engellerse (404), bu kez ekranda [Object object] yerine bu Türkçe yazıyı göreceksin:
-    if (error.message.includes('404')) {
-        return res.status(500).json({ 
-            error: "Google, kullandığınız API anahtarına (Hesaba) erişim izni vermiyor. Lütfen okul hesabı yerine kişisel bir Gmail hesabı ile API şifresi alın." 
-        });
-    }
-    
-    return res.status(500).json({ error: error.message || "Bilinmeyen bir hata oluştu." });
+    console.error("[SİSTEM HATASI]:", error);
+    // Artık o Türkçe mesajı kaldırdık, Google'ın orijinal hatasını harfi harfine React'a yolluyoruz.
+    return res.status(500).json({ error: error.message || "Bilinmeyen API Hatası" });
   }
 });
 
-app.get('/', (req, res) => {
-  res.send("🚀 Resumatch Backend Kusursuz Çalışıyor!");
-});
+app.get('/', (req, res) => res.send("🚀 Backend Aktif! Test için URL sonuna /test-api yazın."));
 
-app.listen(PORT, () => {
-  console.log(`🚀 Backend Sunucusu ${PORT} portunda başlatıldı.`);
-});
+app.listen(PORT, () => console.log(`🚀 Sunucu ${PORT} portunda başlatıldı.`));
