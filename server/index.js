@@ -16,7 +16,7 @@ app.use(express.json({ limit: '50mb' }));
 // Herhangi bir dış paket kurmadan kendi hafızamızda tuttuğumuz koruma sistemi
 const ipRequestCounts = new Map();
 const RATE_LIMIT_WINDOW_MS = 60 * 60 * 1000; // 1 Saat (Milisaniye cinsinden)
-const MAX_REQUESTS = 5; // 1 Saatte aynı IP'nin en fazla üretebileceği CV sayısı
+const MAX_REQUESTS = 20; // 1 Saatte aynı IP'nin en fazla üretebileceği CV sayısı
 
 const rateLimiter = (req, res, next) => {
   const ip = req.ip || req.headers['x-forwarded-for'] || req.socket.remoteAddress;
