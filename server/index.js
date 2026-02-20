@@ -9,7 +9,7 @@ const PORT = process.env.PORT || 5000;
 app.use(cors());
 app.use(express.json({ limit: '50mb' })); 
 
-// 🚨 KORUMA 1: Eğer Render'a şifreyi girerken tırnak işareti (") unuttuysan bile bu kod o tırnakları ve boşlukları zorla siler!
+// Şifrelerdeki olası tırnak ve boşlukları tertemiz yapıyoruz
 const apiKeys = [
   process.env.GEMINI_API_KEY_bcey2603,
   process.env.GEMINI_API_KEY_bceylannn,
@@ -26,28 +26,19 @@ function getNextApiKey() {
   return { key, number: usedIndex };
 }
 
-app.post('/optimize', async (req, res) => {
-  try {
-    const keyData = getNextApiKey();
-    if (!keyData) {
-      return res.status(500).json({ error: "Sunucuda API anahtarı bulunamadı." });
-    }
+// Yeni: İstek atma fonksiyonunu ayırdık ki hata alırsak başka modelle tekrar deneyebilelim
+async function tryGenerate(genAI, modelName, reqBody) {
+    const model = genAI.getGenerativeModel({ model: modelName });
+    
+    let reqConfig = reqBody.generationConfig || {};
+    let promptData = reqBody.contents;
 
-    // Konsolda şifrenin düzgün okunup okunmadığını görmek için ilk 5 harfini yazdırıyoruz (Örn: AIzaS***)
-    console.log(`[İSTEK ALINDI] Key #${keyData.number} | Şifre Testi: ${keyData.key.substring(0, 5)}***`);
-
-    const genAI = new GoogleGenerativeAI(keyData.key);
-    const model = genAI.getGenerativeModel({ model: "gemini-1.5-flash" });
-
-    let reqConfig = req.body.generationConfig || {};
-    let promptData = req.body.contents;
-
-    // 🚨 KORUMA 2: Eğer SDK sürümü eskiyse ve systemInstruction desteklemiyorsa, sistemi kandırıp komutu mesajın içine gömüyoruz.
-    if (req.body.systemInstruction && req.body.systemInstruction.parts) {
-        const sysText = req.body.systemInstruction.parts[0].text;
+    // Sistem komutlarını, eski modellerin de anlayacağı şekle çeviriyoruz
+    if (reqBody.systemInstruction && reqBody.systemInstruction.parts) {
+        const sysText = reqBody.systemInstruction.parts[0].text;
         promptData = [
             { role: "user", parts: [{ text: `AŞAĞIDAKİ SİSTEM KOMUTUNA KESİNLİKLE UY:\n${sysText}\n\n---\nKULLANICI VERİSİ:\n` }] },
-            ...req.body.contents
+            ...reqBody.contents
         ];
     }
 
@@ -56,9 +47,38 @@ app.post('/optimize', async (req, res) => {
         generationConfig: reqConfig
     });
 
-    const responseText = result.response.text();
-    console.log(`[BAŞARILI] Key #${keyData.number} ile işlem kusursuz tamamlandı!`);
+    return result.response.text();
+}
+
+app.post('/optimize', async (req, res) => {
+  try {
+    const keyData = getNextApiKey();
+    if (!keyData) {
+      return res.status(500).json({ error: "Sunucuda API anahtarı bulunamadı." });
+    }
+
+    console.log(`[İSTEK ALINDI] Key #${keyData.number} kullanılıyor...`);
+    const genAI = new GoogleGenerativeAI(keyData.key);
     
+    let responseText;
+    
+    try {
+        // 1. AŞAMA: Önce en hızlı ve güncel model olan 1.5-flash'ı deniyoruz
+        responseText = await tryGenerate(genAI, "gemini-1.5-flash", req.body);
+        console.log(`[BAŞARILI] Key #${keyData.number} -> gemini-1.5-flash ile üretti!`);
+    } catch (modelError) {
+        // 2. AŞAMA: Eğer bu hesaba 1.5-flash kapalıysa (404 hatası dönerse), anında her hesapta çalışan 'gemini-pro'ya geç!
+        if (modelError.message.includes('404') || modelError.message.includes('not found')) {
+            console.log(`[MODEL DEĞİŞİMİ] Key #${keyData.number} için 1.5-flash kapalı, yedek model (gemini-pro) deneniyor...`);
+            responseText = await tryGenerate(genAI, "gemini-pro", req.body);
+            console.log(`[BAŞARILI] Key #${keyData.number} -> gemini-pro ile üretti!`);
+        } else {
+            // Kota dolması (429) gibi başka bir hataysa işlemi durdur
+            throw modelError; 
+        }
+    }
+    
+    // İşlem başarılıysa sonucu React'a (Frontend'e) yolla
     return res.json({
         candidates: [{ content: { parts: [{ text: responseText }] } }]
     });
