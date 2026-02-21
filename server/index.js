@@ -1,72 +1,96 @@
 const express = require('express');
 const cors = require('cors');
+const { GoogleGenerativeAI } = require('@google/generative-ai');
 require('dotenv').config();
 
 const app = express();
 const PORT = process.env.PORT || 5000;
 
+// 🚨 Render gibi sistemlerde IP adresini doğru okumak için bu ayar şarttır
+app.set('trust proxy', 1);
+
 app.use(cors());
-app.use(express.json({ limit: '10mb' })); 
+app.use(express.json({ limit: '50mb' })); 
 
-// --- DİKKAT: Render'daki değişken isimlerini birebir buraya yazdım ---
-// process.env['...'] şeklinde yazmamızın sebebi, isminde nokta (ogr.sakarya) olmasıdır.
-const apiKeys = [
-  process.env.GEMINI_API_KEY_bcey2603,
-  process.env.GEMINI_API_KEY_bceylannn,
-  process.env['GEMINI_API_KEY_ogr.sakarya']
-].filter(Boolean);
+// --- 🛡️ GÜVENLİK DUVARI (RATE LIMITER) ---
+// Herhangi bir dış paket kurmadan kendi hafızamızda tuttuğumuz koruma sistemi
+const ipRequestCounts = new Map();
+const RATE_LIMIT_WINDOW_MS = 60 * 60 * 1000; // 1 Saat (Milisaniye cinsinden)
+const MAX_REQUESTS = 20; // 1 Saatte aynı IP'nin en fazla üretebileceği CV sayısı
 
-let currentKeyIndex = 0;
+const rateLimiter = (req, res, next) => {
+  const ip = req.ip || req.headers['x-forwarded-for'] || req.socket.remoteAddress;
+  const now = Date.now();
 
-function getNextApiKey() {
-  if (apiKeys.length === 0) {
-    throw new Error("API anahtarı bulunamadı! Lütfen Render Environment Variables kısmını kontrol edin.");
+  if (!ipRequestCounts.has(ip)) {
+    ipRequestCounts.set(ip, { count: 1, startTime: now });
+    return next();
   }
-  
-  const key = apiKeys[currentKeyIndex];
-  const usedIndex = currentKeyIndex + 1; 
-  
-  // İndeksi bir sonraki anahtara kaydır (Başa sarar)
-  currentKeyIndex = (currentKeyIndex + 1) % apiKeys.length;
-  
-  return { key, number: usedIndex };
-}
 
-app.post('/optimize', async (req, res) => {
-  try {
-    // Sıradaki anahtarı al
-    const keyData = getNextApiKey();
-    console.log(`[İSTEK ALINDI] Kullanılan Key Havuzu: #${keyData.number} (Toplam: ${apiKeys.length})`);
+  const record = ipRequestCounts.get(ip);
+  
+  // Eğer 1 saat dolduysa, sayacı sıfırla
+  if (now - record.startTime > RATE_LIMIT_WINDOW_MS) {
+    ipRequestCounts.set(ip, { count: 1, startTime: now });
+    return next();
+  }
 
-    const googleApiUrl = `https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${keyData.key}`;
-
-    const response = await fetch(googleApiUrl, {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify(req.body) 
+  // Sınır aşıldıysa sistemi ve cüzdanını koru, işlemi reddet
+  if (record.count >= MAX_REQUESTS) {
+    return res.status(429).json({ 
+      error: "Güvenlik sebebiyle saatlik CV oluşturma limitinize ulaştınız. Lütfen 1 saat sonra tekrar deneyin." 
     });
+  }
 
-    const data = await response.json();
+  // Sınır aşılmadıysa sayacı artır ve devam et
+  record.count += 1;
+  next();
+};
 
-    if (!response.ok) {
-      console.error(`[API HATASI] Key #${keyData.number} hata verdi! Status: ${response.status}`);
-      return res.status(response.status).json(data);
+// --- 🚀 ANA API ENDPOINT'İ (Güvenlik Duvarı Aktif) ---
+// rateLimiter middleware'ini araya koyduk
+app.post('/optimize', rateLimiter, async (req, res) => {
+  try {
+    const rawKey = process.env.GEMINI_API_KEY;
+    if (!rawKey) return res.status(500).json({ error: "Sunucuda API Anahtarı bulunamadı." });
+
+    const cleanKey = rawKey.replace(/['"]/g, '').trim();
+    const genAI = new GoogleGenerativeAI(cleanKey);
+    
+    // Limitsiz ve güçlü modelimiz
+    const model = genAI.getGenerativeModel({ model: "gemini-2.5-flash" });
+
+    let promptData = req.body.contents;
+    
+    if (req.body.systemInstruction && req.body.systemInstruction.parts) {
+        const sysText = req.body.systemInstruction.parts[0].text;
+        promptData = [
+            { role: "user", parts: [{ text: `AŞAĞIDAKİ SİSTEM KOMUTLARINA KESİNLİKLE UY:\n${sysText}\n\n---\nKULLANICI VERİSİ:\n` }] },
+            ...req.body.contents
+        ];
     }
 
-    return res.json(data);
+    let reqConfig = req.body.generationConfig || {};
+    reqConfig.responseMimeType = "application/json";
+
+    const result = await model.generateContent({
+        contents: promptData,
+        generationConfig: reqConfig
+    });
+    
+    let responseText = result.response.text();
+    responseText = responseText.replace(/```json/g, '').replace(/```/g, '').trim();
+
+    return res.json({
+        candidates: [{ content: { parts: [{ text: responseText }] } }]
+    });
 
   } catch (error) {
-    console.error("[SUNUCU HATASI]:", error.message);
-    return res.status(500).json({ error: "Sunucu tarafında beklenmedik bir hata oluştu." });
+    console.error("[SİSTEM HATASI]:", error.message);
+    return res.status(500).json({ error: error.message });
   }
 });
 
-app.get('/', (req, res) => {
-  res.send(`Resumatch Backend Aktif! Yüklü API Anahtarı Sayısı: ${apiKeys.length}`);
-});
+app.get('/', (req, res) => res.send("🚀 Resumatch Güvenlik Duvarlı Backend Aktif!"));
 
-app.listen(PORT, () => {
-  console.log(`🚀 Backend Sunucusu ${PORT} portunda başarıyla başlatıldı.`);
-});
+app.listen(PORT, () => console.log(`🚀 Sunucu ${PORT} portunda başlatıldı.`));
