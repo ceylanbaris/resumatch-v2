@@ -1541,52 +1541,53 @@ const App = () => {
         {/* --- SOL PANEL (GİRİŞ ALANI) --- */}
         <div className="lg:col-span-5 space-y-4 lg:space-y-6 lg:h-full lg:overflow-y-auto pr-0 lg:pr-2 pb-10 lg:pb-20 scrollbar-thin scrollbar-thumb-black scrollbar-track-transparent">
           <div className="bg-white p-4 sm:p-6 rounded-2xl shadow-sm border border-slate-200">
-            {/* LOGO ALANI */}
-            <div className="flex items-center gap-3 mb-6 lg:mb-8 select-none">
-              {/* --- PREMIUM KOYU TEMA SVG LOGO BAŞLANGICI --- */}
-<svg
-  xmlns="http://www.w3.org/2000/svg"
-  viewBox="0 0 24 24"
-  fill="currentColor"
-  /* Gölge rengini daha koyu bir ambere çektik */
-  className="w-14 h-14 mr-3 filter drop-shadow-[0_2px_4px_rgba(180,83,9,0.5)] hover:scale-105 transition-transform duration-300 ease-in-out"
->
-  <defs>
-    {/* Yeni Koyu Altın/Bronz Degrade */}
-    <linearGradient id="dark-gold-gradient" x1="0%" y1="0%" x2="100%" y2="100%">
-      <stop offset="0%" style={{ stopColor: "#FBBF24", stopOpacity: 1 }} /> {/* Tok Amber Sarısı */}
-      <stop offset="50%" style={{ stopColor: "#D97706", stopOpacity: 1 }} /> {/* Koyu Kehribar */}
-      <stop offset="100%" style={{ stopColor: "#92400E", stopOpacity: 1 }} /> {/* Derin Bronz */}
-    </linearGradient>
-  </defs>
-  {/* Belge İkonu */}
-  <path
-    fill="url(#dark-gold-gradient)"
-    d="M5.625 1.5c-1.036 0-1.875.84-1.875 1.875v17.25c0 1.035.84 1.875 1.875 1.875h12.75c1.035 0 1.875-.84 1.875-1.875V1.5H5.625z"
-  />
-  {/* Onay/Tik İşareti (Beyaz kalarak koyu logoda kontrast yaratacak) */}
-  <path
-    fill="#FFFFFF"
-    d="M10.58 15.75l-3.48-3.48 1.06-1.06 2.42 2.42 6.23-6.23 1.06 1.06-7.29 7.29z"
-    className="drop-shadow-sm"
-  />
-  {/* Üst Kıvrım Efekti */}
-  <path
-    fill="url(#dark-gold-gradient)"
-    d="M18.375 1.5h1.875v5.25h-5.25V1.5h3.375z"
-    opacity="0.8"
-  />
-</svg>
-{/* --- PREMIUM KOYU TEMA SVG LOGO BİTİŞİ --- */}
-              <div className="flex flex-col justify-center">
-  {/* Başlık: Koyu temaya uygun amber-bronz degrade */}
-  <span className="text-2xl font-extrabold text-transparent bg-clip-text bg-gradient-to-r from-amber-400 via-amber-600 to-amber-800 tracking-wide leading-tight">
-    Hazır CV
-  </span>
-  {/* Slogan: Koyu arka planda net okunan açık gri ton */}
-  <span className="text-xs text-gray-300 font-medium tracking-wider uppercase ml-0.5">
-    Profesyonel Kariyer Asistanı
-  </span>
+           {/* LOGO ALANI */}
+<div className="flex items-center gap-3 mb-6 lg:mb-8 select-none">
+  {/* --- KURUMSAL SİYAH/ANTRASİT SVG LOGO BAŞLANGICI --- */}
+  <svg
+    xmlns="http://www.w3.org/2000/svg"
+    viewBox="0 0 24 24"
+    fill="currentColor"
+    className="w-12 h-12 sm:w-14 sm:h-14 mr-1 filter drop-shadow-[0_4px_6px_rgba(0,0,0,0.2)] hover:scale-105 transition-transform duration-300 ease-in-out"
+  >
+    <defs>
+      {/* Sitenin renk paletinden alınan Siyah ve Antrasit Degrade */}
+      <linearGradient id="slate-gradient" x1="0%" y1="0%" x2="100%" y2="100%">
+        <stop offset="0%" style={{ stopColor: "#6C6D74", stopOpacity: 1 }} /> {/* Gri */}
+        <stop offset="50%" style={{ stopColor: "#262E36", stopOpacity: 1 }} /> {/* Antrasit */}
+        <stop offset="100%" style={{ stopColor: "#000000", stopOpacity: 1 }} /> {/* Siyah */}
+      </linearGradient>
+    </defs>
+    {/* Belge İkonu */}
+    <path
+      fill="url(#slate-gradient)"
+      d="M5.625 1.5c-1.036 0-1.875.84-1.875 1.875v17.25c0 1.035.84 1.875 1.875 1.875h12.75c1.035 0 1.875-.84 1.875-1.875V1.5H5.625z"
+    />
+    {/* Onay/Tik İşareti */}
+    <path
+      fill="#FFFFFF"
+      d="M10.58 15.75l-3.48-3.48 1.06-1.06 2.42 2.42 6.23-6.23 1.06 1.06-7.29 7.29z"
+      className="drop-shadow-sm"
+    />
+    {/* Üst Kıvrım Efekti */}
+    <path
+      fill="url(#slate-gradient)"
+      d="M18.375 1.5h1.875v5.25h-5.25V1.5h3.375z"
+      opacity="0.85"
+    />
+  </svg>
+  {/* --- KURUMSAL SİYAH/ANTRASİT SVG LOGO BİTİŞİ --- */}
+
+  <div className="flex flex-col justify-center">
+    {/* Başlık: Siyah ve antrasit tonlarında karizmatik geçiş */}
+    <span className="text-2xl sm:text-3xl font-black text-transparent bg-clip-text bg-gradient-to-r from-slate-600 via-slate-800 to-black tracking-tight leading-tight">
+      Hazır CV
+    </span>
+    {/* Slogan: Sitenin gri tonlarına tamamen uygun */}
+    <span className="text-[10px] sm:text-xs text-slate-500 font-bold tracking-widest uppercase ml-0.5 mt-0.5">
+      Profesyonel Kariyer Asistanı
+    </span>
+  </div>
 </div>
             </div>
             
