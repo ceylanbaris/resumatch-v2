@@ -1541,7 +1541,7 @@ const App = () => {
         {/* --- SOL PANEL (GİRİŞ ALANI) --- */}
         <div className="lg:col-span-5 space-y-4 lg:space-y-6 lg:h-full lg:overflow-y-auto pr-0 lg:pr-2 pb-10 lg:pb-20 scrollbar-thin scrollbar-thumb-black scrollbar-track-transparent">
           <div className="bg-white p-4 sm:p-6 rounded-2xl shadow-sm border border-slate-200">
-           {/* LOGO ALANI */}
+            {/* LOGO ALANI */}
 <div className="flex items-center gap-3 mb-6 lg:mb-8 select-none">
   {/* --- KURUMSAL SİYAH/ANTRASİT SVG LOGO BAŞLANGICI --- */}
   <svg
@@ -1589,7 +1589,6 @@ const App = () => {
     </span>
   </div>
 </div>
-            </div>
             
             <div className="space-y-5 lg:space-y-6">
               {/* PDF Yükleme */}
