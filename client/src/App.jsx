@@ -1543,27 +1543,28 @@ const App = () => {
           <div className="bg-white p-4 sm:p-6 rounded-2xl shadow-sm border border-slate-200">
             {/* LOGO ALANI */}
             <div className="flex items-center gap-3 mb-6 lg:mb-8 select-none">
-               {/* --- PREMIUM SVG LOGO BAŞLANGICI --- */}
+              {/* --- PREMIUM KOYU TEMA SVG LOGO BAŞLANGICI --- */}
 <svg
   xmlns="http://www.w3.org/2000/svg"
   viewBox="0 0 24 24"
   fill="currentColor"
-  className="w-14 h-14 mr-3 filter drop-shadow-[0_2px_4px_rgba(234,179,8,0.4)] hover:scale-105 transition-transform duration-300 ease-in-out"
+  /* Gölge rengini daha koyu bir ambere çektik */
+  className="w-14 h-14 mr-3 filter drop-shadow-[0_2px_4px_rgba(180,83,9,0.5)] hover:scale-105 transition-transform duration-300 ease-in-out"
 >
   <defs>
-    <linearGradient id="gold-gradient" x1="0%" y1="0%" x2="100%" y2="100%">
-      <stop offset="0%" style={{ stopColor: "#FCD34D", stopOpacity: 1 }} /> {/* Açık Altın */}
-      <stop offset="50%" style={{ stopColor: "#F59E0B", stopOpacity: 1 }} /> {/* Orta Altın */}
-      <stop offset="100%" style={{ stopColor: "#B45309", stopOpacity: 1 }} /> {/* Koyu Bronz */}
+    {/* Yeni Koyu Altın/Bronz Degrade */}
+    <linearGradient id="dark-gold-gradient" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" style={{ stopColor: "#FBBF24", stopOpacity: 1 }} /> {/* Tok Amber Sarısı */}
+      <stop offset="50%" style={{ stopColor: "#D97706", stopOpacity: 1 }} /> {/* Koyu Kehribar */}
+      <stop offset="100%" style={{ stopColor: "#92400E", stopOpacity: 1 }} /> {/* Derin Bronz */}
     </linearGradient>
   </defs>
   {/* Belge İkonu */}
   <path
-    fill="url(#gold-gradient)"
+    fill="url(#dark-gold-gradient)"
     d="M5.625 1.5c-1.036 0-1.875.84-1.875 1.875v17.25c0 1.035.84 1.875 1.875 1.875h12.75c1.035 0 1.875-.84 1.875-1.875V1.5H5.625z"
-    opacity="0.9"
   />
-  {/* Onay/Tik İşareti */}
+  {/* Onay/Tik İşareti (Beyaz kalarak koyu logoda kontrast yaratacak) */}
   <path
     fill="#FFFFFF"
     d="M10.58 15.75l-3.48-3.48 1.06-1.06 2.42 2.42 6.23-6.23 1.06 1.06-7.29 7.29z"
@@ -1571,17 +1572,19 @@ const App = () => {
   />
   {/* Üst Kıvrım Efekti */}
   <path
-    fill="url(#gold-gradient)"
+    fill="url(#dark-gold-gradient)"
     d="M18.375 1.5h1.875v5.25h-5.25V1.5h3.375z"
-    opacity="0.7"
+    opacity="0.8"
   />
 </svg>
-{/* --- PREMIUM SVG LOGO BİTİŞİ --- */}
-               <div className="flex flex-col justify-center">
-  <span className="text-2xl font-extrabold text-transparent bg-clip-text bg-gradient-to-r from-yellow-200 via-yellow-500 to-yellow-700 tracking-wide leading-tight">
+{/* --- PREMIUM KOYU TEMA SVG LOGO BİTİŞİ --- */}
+              <div className="flex flex-col justify-center">
+  {/* Başlık: Koyu temaya uygun amber-bronz degrade */}
+  <span className="text-2xl font-extrabold text-transparent bg-clip-text bg-gradient-to-r from-amber-400 via-amber-600 to-amber-800 tracking-wide leading-tight">
     Hazır CV
   </span>
-  <span className="text-xs text-gray-400 font-medium tracking-wider uppercase ml-0.5">
+  {/* Slogan: Koyu arka planda net okunan açık gri ton */}
+  <span className="text-xs text-gray-300 font-medium tracking-wider uppercase ml-0.5">
     Profesyonel Kariyer Asistanı
   </span>
 </div>
