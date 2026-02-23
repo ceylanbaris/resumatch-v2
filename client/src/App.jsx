@@ -1012,9 +1012,9 @@ const App = () => {
         userPrompt = `Bölüm Başlığı: ${addItemTitle}\nİçerik: ${addItemInput}`;
         systemInstruction = `Sen profesyonel bir CV yazarısın. Kullanıcının girdiği içeriği analiz et ve iki formattan birini seç:
         1. DETAYLI FORMAT (Projeler, Gönüllü Çalışmalar gibi tarih ve detay gerektirenler):
-           JSON Çıktısı: {"type": "detailed", "entries": [{"role": "Proje Adı", "company": "Teknolojiler/Kurum", "date": "Tarih", "bullets": ["Detay 1"]}]}
+            JSON Çıktısı: {"type": "detailed", "entries": [{"role": "Proje Adı", "company": "Teknolojiler/Kurum", "date": "Tarih", "bullets": ["Detay 1"]}]}
         2. BASİT FORMAT (Sertifikalar, Diller, Hobiler gibi liste olanlar):
-           JSON Çıktısı: {"type": "simple", "items": ["Madde 1", "Madde 2"]}
+            JSON Çıktısı: {"type": "simple", "items": ["Madde 1", "Madde 2"]}
         Markdown kullanma. Sadece JSON döndür. Dili: ${langText}.`;
     }
     else {
@@ -1542,13 +1542,10 @@ const App = () => {
         <div className="lg:col-span-5 space-y-4 lg:space-y-6 lg:h-full lg:overflow-y-auto pr-0 lg:pr-2 pb-10 lg:pb-20 scrollbar-thin scrollbar-thumb-black scrollbar-track-transparent">
           <div className="bg-white p-4 sm:p-6 rounded-2xl shadow-sm border border-slate-200">
             {/* LOGO ALANI */}
-            <div className="flex items-center gap-3 mb-6 lg:mb-8">
-               <div className="flex items-center justify-center w-10 h-10 bg-black rounded-lg shadow-md relative">
-                  <FileText className="w-5 h-5 text-white absolute -ml-1 -mt-1" />
-                  <Search className="w-4 h-4 text-slate-300 absolute ml-2 mt-2 stroke-[3]" />
-               </div>
+            <div className="flex items-center gap-3 mb-6 lg:mb-8 select-none">
+               <img src="/logo.png" alt="Hazır CV Logo" className="w-12 h-12 sm:w-14 sm:h-14 object-contain drop-shadow-lg" />
                <span className="text-2xl sm:text-3xl font-bold text-slate-900 tracking-tight" style={{ fontFamily: "'Playfair Display', serif", fontStyle: 'italic' }}>
-                 İlana Göre CV
+                 Hazır CV
                </span>
             </div>
             
