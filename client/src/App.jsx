@@ -1469,9 +1469,10 @@ const App = () => {
   };
 
   return (
-    <div className="min-h-screen lg:h-screen bg-slate-50 text-slate-900 font-sans p-2 md:p-6 lg:p-10" lang={cvLanguage}>
-      
-      <style>{`
+    <>
+      <div className="min-h-screen lg:h-screen bg-slate-50 text-slate-900 font-sans p-2 md:p-6 lg:p-10" lang={cvLanguage}>
+        
+        <style>{`
         @import url('https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400..900;1,400..900&display=swap');
 
         #resume-preview {
@@ -2550,6 +2551,7 @@ const App = () => {
       )}
 
     </div>
+    </>
   );
 };
 
