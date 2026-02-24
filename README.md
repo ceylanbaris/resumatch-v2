@@ -1,42 +1,42 @@
-# 📄 Hazır CV (Resumatch) - AI-Powered Career Assistant
+# 📄 Hazır CV - Yapay Zeka Destekli Profesyonel Kariyer Asistanı
 
-[![Live Demo](https://img.shields.io/badge/Live_Demo-hazircv.com.tr-blue?style=for-the-badge)](https://hazircv.com.tr)
+[![Canlı Demo](https://img.shields.io/badge/Canl%C4%B1_Demo-hazircv.com.tr-blue?style=for-the-badge)](https://hazircv.com.tr)
 [![React](https://img.shields.io/badge/React-20232A?style=for-the-badge&logo=react&logoColor=61DAFB)](https://reactjs.org/)
 [![Tailwind CSS](https://img.shields.io/badge/Tailwind_CSS-38B2AC?style=for-the-badge&logo=tailwind-css&logoColor=white)](https://tailwindcss.com/)
 [![Google Gemini](https://img.shields.io/badge/Powered_by-Google_Gemini-8E75B2?style=for-the-badge)](https://deepmind.google/technologies/gemini/)
 
-Hazır CV is an intelligent SaaS platform designed to solve the most time-consuming part of the job application process: tailoring your resume for every single job posting. By leveraging AI, it analyzes your base CV and the target job description to generate a highly optimized, ATS-friendly resume in seconds.
+Hazır CV, iş başvuru sürecinin en çok vakit alan ve yorucu kısmını ortadan kaldırmak için tasarlanmış akıllı bir SaaS platformudur: **Her iş ilanı için ayrı CV hazırlama derdine son verir.** Yapay zeka gücünü kullanarak mevcut CV'nizi ve başvurmak istediğiniz iş ilanını analiz eder; saniyeler içinde o ilana özel, ATS (Aday Takip Sistemi) uyumlu ve yüksek düzeyde optimize edilmiş yeni bir özgeçmiş oluşturur.
 
-## ✨ Key Features
+## ✨ Temel Özellikler
 
-* **🎯 AI-Driven Resume Tailoring:** Upload your base CV (PDF) and paste the job description. The AI rewrites and reorganizes your experience to highlight the exact skills the employer is looking for.
-* **📊 ATS Compatibility Analysis:** Get instant feedback on your resume. The system provides a match score, identifies skill gaps, and transparently shows which strategic keywords were added.
-* **🎙️ Interactive Mock Interviews:** Practice before the real thing. Engage in dynamic, chat-based interviews with AI acting as an HR Specialist or Tech Lead, based specifically on your newly generated CV and the job posting. Get a detailed evaluation report at the end.
-* **🎨 Live WYSIWYG Editing & Customization:** Edit your generated CV on the fly. Change templates, tweak color palettes, adjust text alignment, and switch between 1st-person and 3rd-person narrative voices with a single click.
-* **🖨️ High-Fidelity PDF Export:** Download your polished, print-ready CV instantly without losing any formatting or styling.
-* **🌍 Multilingual Support:** Generate and format resumes in both Turkish and English.
+* **🎯 Yapay Zeka ile İlana Özel Optimizasyon:** Mevcut CV'nizi (PDF) yükleyin ve iş ilanının metnini yapıştırın. Yapay zeka, orijinal deneyimlerinizi bozmadan işverenin aradığı yetkinlikleri öne çıkaracak şekilde CV'nizi yeniden yazar.
+* **📊 ATS Uyumluluk Analizi:** Özgeçmişiniz hakkında anında şeffaf geri bildirim alın. Sistem size bir eşleşme skoru sunar, eksik yetkinliklerinizi (gaps) belirler ve CV'nize stratejik olarak eklenen anahtar kelimeleri listeler.
+* **🎙️ İnteraktif Mülakat Simülasyonu:** Gerçek mülakata girmeden önce pratik yapın! İK Uzmanı veya Teknik Lider (Tech Lead) rolüne giren yapay zeka ile güncellenmiş CV'niz ve hedef iş ilanınız üzerinden sohbet tabanlı mülakat yapın. Süreç sonunda detaylı bir değerlendirme raporu alın.
+* **🎨 Canlı Düzenleme ve Özelleştirme:** Oluşturulan CV üzerinde canlı olarak değişiklik yapın. Tek tıkla şablonları, renk paletini, metin hizalamasını ve anlatım dilini (1. Tekil veya 3. Tekil şahıs) dilediğiniz gibi değiştirin.
+* **🖨️ Yüksek Kaliteli PDF Çıktısı:** Mükemmel hale getirdiğiniz CV'nizi hiçbir format ve stil kaybı yaşamadan anında baskıya hazır PDF olarak indirin.
+* **🌍 Çoklu Dil Desteği:** İster Türkçe ister İngilizce dilinde anında profesyonel özgeçmişler tasarlayın.
 
-## 🛠️ Tech Stack
+## 🛠️ Kullanılan Teknolojiler
 
 * **Frontend:** React.js, Vite, Tailwind CSS
-* **Icons & UI:** Lucide React
-* **AI Engine:** Google Gemini Pro API (via custom backend)
-* **PDF Processing:** `pdf.js` (parsing), `html2canvas` & `jsPDF` (export rendering)
-* **Hosting & Analytics:** Vercel
+* **İkonlar & UI:** Lucide React
+* **Yapay Zeka Motoru:** Google Gemini Pro API (Özel backend üzerinden)
+* **PDF İşleme:** `pdf.js` (Metin ayrıştırma), `html2canvas` & `jsPDF` (Yüksek kaliteli çıktı alma)
+* **Hosting & Analitik:** Vercel
 
-## 🚀 How It Works
+## 🚀 Nasıl Çalışır?
 
-1.  **Upload:** Drop your existing resume (PDF format).
-2.  **Target:** Paste the job description of the role you are applying for.
-3.  **Generate:** Click the optimize button (TR/EN). The AI engine processes the data and generates a tailored resume.
-4.  **Review & Edit:** Check your ATS score, read the feedback, and make live edits directly on the preview panel.
-5.  **Practice:** Start a mock interview simulation to prepare for HR or Technical screening.
-6.  **Download:** Export your perfect CV as a PDF.
+1. **Yükle:** Mevcut temel CV'nizi (PDF formatında) sisteme yükleyin.
+2. **Hedefle:** Başvuracağınız iş ilanının metnini ilgili alana yapıştırın.
+3. **Oluştur:** TR/EN tasarım butonuna tıklayın. Yapay zeka verileri işler ve saniyeler içinde size özel CV'yi oluşturur.
+4. **İncele ve Düzenle:** ATS skorunuzu görün, analiz raporunu okuyun ve önizleme paneli üzerinden istediğiniz satırı canlı olarak düzenleyin.
+5. **Pratik Yap:** İlana hazırlık için İK veya Teknik mülakat simülasyonunu başlatın.
+6. **İndir:** Kusursuz hale getirdiğiniz CV'nizi PDF olarak dışa aktarın.
 
-## 💻 Local Development
+## 💻 Yerel Kurulum (Local Development)
 
-To run this project locally, follow these steps:
+Projeyi kendi bilgisayarınızda çalıştırmak için şu adımları izleyebilirsiniz:
 
-1. Clone the repository:
+1. Repoyu bilgisayarınıza klonlayın:
    ```bash
-   git clone [https://github.com/yourusername/resumatch.git](https://github.com/yourusername/resumatch.git)
+   git clone [https://github.com/KULLANICI_ADIN/resumatch.git](https://github.com/KULLANICI_ADIN/resumatch.git)
