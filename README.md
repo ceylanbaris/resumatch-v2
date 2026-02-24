@@ -40,3 +40,6 @@ Projeyi kendi bilgisayarınızda çalıştırmak için şu adımları izleyebili
 1. Repoyu bilgisayarınıza klonlayın:
    ```bash
    git clone [https://github.com/KULLANICI_ADIN/resumatch.git](https://github.com/KULLANICI_ADIN/resumatch.git)
+
+   <img width="1024" height="590" alt="image" src="https://github.com/user-attachments/assets/800312c5-4e8e-40e8-a3e5-160321567aba" />
+
