@@ -226,7 +226,6 @@ const App = () => {
     }
   }, [interviewMessages, interviewOpen, interviewLoading, isGeneratingReport, interviewReport]);
 
-  // --- YENİ EKLENDİ: MÜLAKAT BİTTİĞİNDE RAPOR OLUŞTURUCUYU TETİKLE ---
   useEffect(() => {
     if (isInterviewFinished && !interviewReport && !isGeneratingReport && interviewMessages.length > 0) {
         generateInterviewReport();
@@ -698,7 +697,6 @@ const App = () => {
     return cleaned.replace(/^\{\s*|\s*\}$/g, '').trim(); 
   };
 
-  // 1. Butona basılınca Modalı aç
   const handleStartInterview = () => {
     if (!originalCV || !jobDescription) {
         setError("Mülakat için önce CV ve İş İlanı girmelisiniz.");
@@ -711,10 +709,9 @@ const App = () => {
     setUserInterviewInput('');
     setQuestionCount(0);
     setIsInterviewFinished(false);
-    setInterviewReport(null); // Yeni ekleme
+    setInterviewReport(null);
   };
 
-  // 2. Seçim yapıldıktan sonra AI'ı tetikleyen fonksiyon
   const startInterviewSession = async (type) => {
       setInterviewType(type);
       setInterviewLoading(true);
@@ -751,7 +748,6 @@ const App = () => {
       }
   };
 
-  // 3. Sohbeti devam ettiren ve Troll kontrolü yapan fonksiyon
   const handleSendInterviewMessage = async () => {
     if (!userInterviewInput.trim()) return;
     
@@ -821,7 +817,6 @@ const App = () => {
       }
   };
 
-  // --- YENİ: MÜLAKAT BİTİNCE ANALİZ RAPORU OLUŞTURMA FONKSİYONU ---
   const generateInterviewReport = async () => {
     setIsGeneratingReport(true);
     
@@ -1473,1084 +1468,1084 @@ const App = () => {
       <div className="min-h-screen lg:h-screen bg-slate-50 text-slate-900 font-sans p-2 md:p-6 lg:p-10" lang={cvLanguage}>
         
         <style>{`
-        @import url('https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400..900;1,400..900&display=swap');
+          @import url('https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400..900;1,400..900&display=swap');
 
-        #resume-preview {
-            -webkit-font-smoothing: antialiased;
-            -moz-osx-font-smoothing: grayscale;
-            text-rendering: optimizeLegibility;
-        }
-        #resume-preview b, 
-        #resume-preview strong { 
-          color: #0f172a !important; 
-          font-weight: 700 !important;
-        }
-        @keyframes confetti-fall {
-          0% { transform: translateY(0) rotate(0deg); opacity: 1; }
-          100% { transform: translateY(100vh) rotate(360deg); opacity: 0; }
-        }
-        @media print {
-          @page { margin: 0; }
-          body { margin: 0; padding: 0; background: white; }
           #resume-preview {
-            background: white !important;
-            box-shadow: none !important;
-            border: none !important;
-            overflow: hidden !important; 
-            transform: none !important;
+              -webkit-font-smoothing: antialiased;
+              -moz-osx-font-smoothing: grayscale;
+              text-rendering: optimizeLegibility;
           }
-          .page-break-avoid {
-            break-inside: avoid !important;
-            page-break-inside: avoid !important;
+          #resume-preview b, 
+          #resume-preview strong { 
+            color: #0f172a !important; 
+            font-weight: 700 !important;
           }
-          h3 {
-            break-after: avoid !important;
-            page-break-after: avoid !important;
+          @keyframes confetti-fall {
+            0% { transform: translateY(0) rotate(0deg); opacity: 1; }
+            100% { transform: translateY(100vh) rotate(360deg); opacity: 0; }
           }
-          ::-webkit-scrollbar { display: none; }
-          .no-print { display: none !important; }
-        }
-      `}</style>
-      
-      {/* FLOATING TOOLBAR */}
-      {toolbarVisible && (
-        <div 
-          className="fixed z-50 flex items-center bg-slate-900 text-white rounded-lg shadow-xl px-2 py-1 gap-1 animate-in fade-in zoom-in-95 duration-200 no-print"
-          style={{ top: toolbarPosition.top, left: toolbarPosition.left }}
-        >
-          <button 
-            onMouseDown={toggleBold}
-            className="p-1.5 hover:bg-slate-700 rounded transition-colors"
-            title="Kalınlaştır / Vurguyu Kaldır"
-          >
-            <Bold className="w-4 h-4" />
-          </button>
-          <div className="w-px h-4 bg-slate-700 mx-0.5"></div>
-          <button 
-            onMouseDown={(e) => { e.preventDefault(); applyFormat('italic'); }}
-            className="p-1.5 hover:bg-slate-700 rounded transition-colors"
-          >
-            <Italic className="w-4 h-4" />
-          </button>
-          
-          <div className="absolute -bottom-1.5 left-1/2 -translate-x-1/2 w-3 h-3 bg-slate-900 rotate-45"></div>
-        </div>
-      )}
-
-      <div className="max-w-[1400px] mx-auto grid grid-cols-1 lg:grid-cols-12 gap-4 lg:gap-8 min-h-screen lg:h-full lg:overflow-hidden">
+          @media print {
+            @page { margin: 0; }
+            body { margin: 0; padding: 0; background: white; }
+            #resume-preview {
+              background: white !important;
+              box-shadow: none !important;
+              border: none !important;
+              overflow: hidden !important; 
+              transform: none !important;
+            }
+            .page-break-avoid {
+              break-inside: avoid !important;
+              page-break-inside: avoid !important;
+            }
+            h3 {
+              break-after: avoid !important;
+              page-break-after: avoid !important;
+            }
+            ::-webkit-scrollbar { display: none; }
+            .no-print { display: none !important; }
+          }
+        `}</style>
         
-        {/* --- SOL PANEL (GİRİŞ ALANI) --- */}
-        <div className="lg:col-span-5 space-y-4 lg:space-y-6 lg:h-full lg:overflow-y-auto pr-0 lg:pr-2 pb-10 lg:pb-20 scrollbar-thin scrollbar-thumb-black scrollbar-track-transparent">
-          <div className="bg-white p-4 sm:p-6 rounded-2xl shadow-sm border border-slate-200">
-            {/* LOGO ALANI */}
-<div className="flex items-center gap-3 mb-6 lg:mb-8 select-none">
-  {/* --- KURUMSAL SİYAH/ANTRASİT SVG LOGO BAŞLANGICI --- */}
-  <svg
-    xmlns="http://www.w3.org/2000/svg"
-    viewBox="0 0 24 24"
-    fill="currentColor"
-    className="w-12 h-12 sm:w-14 sm:h-14 mr-1 filter drop-shadow-[0_4px_6px_rgba(0,0,0,0.2)] hover:scale-105 transition-transform duration-300 ease-in-out"
-  >
-    <defs>
-      {/* Sitenin renk paletinden alınan Siyah ve Antrasit Degrade */}
-      <linearGradient id="slate-gradient" x1="0%" y1="0%" x2="100%" y2="100%">
-        <stop offset="0%" style={{ stopColor: "#6C6D74", stopOpacity: 1 }} /> {/* Gri */}
-        <stop offset="50%" style={{ stopColor: "#262E36", stopOpacity: 1 }} /> {/* Antrasit */}
-        <stop offset="100%" style={{ stopColor: "#000000", stopOpacity: 1 }} /> {/* Siyah */}
-      </linearGradient>
-    </defs>
-    {/* Belge İkonu */}
-    <path
-      fill="url(#slate-gradient)"
-      d="M5.625 1.5c-1.036 0-1.875.84-1.875 1.875v17.25c0 1.035.84 1.875 1.875 1.875h12.75c1.035 0 1.875-.84 1.875-1.875V1.5H5.625z"
-    />
-    {/* Onay/Tik İşareti */}
-    <path
-      fill="#FFFFFF"
-      d="M10.58 15.75l-3.48-3.48 1.06-1.06 2.42 2.42 6.23-6.23 1.06 1.06-7.29 7.29z"
-      className="drop-shadow-sm"
-    />
-    {/* Üst Kıvrım Efekti */}
-    <path
-      fill="url(#slate-gradient)"
-      d="M18.375 1.5h1.875v5.25h-5.25V1.5h3.375z"
-      opacity="0.85"
-    />
-  </svg>
-  {/* --- KURUMSAL SİYAH/ANTRASİT SVG LOGO BİTİŞİ --- */}
-
-  <div className="flex flex-col justify-center">
-    {/* Başlık: Siyah ve antrasit tonlarında karizmatik geçiş */}
-    <span className="text-2xl sm:text-3xl font-black text-transparent bg-clip-text bg-gradient-to-r from-slate-600 via-slate-800 to-black tracking-tight leading-tight">
-      Hazır CV
-    </span>
-    {/* Slogan: Sitenin gri tonlarına tamamen uygun */}
-    <span className="text-[10px] sm:text-xs text-slate-500 font-bold tracking-widest uppercase ml-0.5 mt-0.5">
-      Profesyonel Kariyer Asistanı
-    </span>
-  </div>
-</div>
+        {/* FLOATING TOOLBAR */}
+        {toolbarVisible && (
+          <div 
+            className="fixed z-50 flex items-center bg-slate-900 text-white rounded-lg shadow-xl px-2 py-1 gap-1 animate-in fade-in zoom-in-95 duration-200 no-print"
+            style={{ top: toolbarPosition.top, left: toolbarPosition.left }}
+          >
+            <button 
+              onMouseDown={toggleBold}
+              className="p-1.5 hover:bg-slate-700 rounded transition-colors"
+              title="Kalınlaştır / Vurguyu Kaldır"
+            >
+              <Bold className="w-4 h-4" />
+            </button>
+            <div className="w-px h-4 bg-slate-700 mx-0.5"></div>
+            <button 
+              onMouseDown={(e) => { e.preventDefault(); applyFormat('italic'); }}
+              className="p-1.5 hover:bg-slate-700 rounded transition-colors"
+            >
+              <Italic className="w-4 h-4" />
+            </button>
             
-            <div className="space-y-5 lg:space-y-6">
-              {/* PDF Yükleme */}
-              <div className="block">
-                <span className="text-xs font-bold text-slate-500 uppercase tracking-wider mb-2 block">1. Mevcut CV'nizi Yükleyin</span>
-                <div className="flex items-center gap-2">
-                  <button 
-                    onClick={() => fileInputRef.current.click()} 
-                    className={`flex-1 flex items-center justify-center gap-2 border-2 border-dashed ${originalCV ? 'border-black bg-slate-100 text-black' : 'bg-white border-slate-300 text-slate-500'} p-4 sm:p-5 rounded-xl hover:border-slate-800 hover:bg-slate-50 transition-all text-sm font-medium group`}
-                    disabled={isPdfLoading}
-                  >
-                    {isPdfLoading ? <><RefreshCw className="w-4 h-4 animate-spin" /><span>Okunuyor...</span></> : originalCV ? <><FileCheck className="w-4 h-4" /><span>PDF Yüklendi</span></> : <><Upload className="w-4 h-4 group-hover:-translate-y-0.5 transition-transform" /><span>PDF Seçin</span></>}
-                  </button>
-                  {originalCV && (
-                    <button onClick={clearPdfData} className="p-4 sm:p-5 bg-white text-slate-400 border border-slate-300 rounded-xl hover:bg-slate-100 hover:text-black transition-colors" title="PDF'i Kaldır">
-                      <Trash2 className="w-4 h-4" />
-                    </button>
-                  )}
-                  <input type="file" ref={fileInputRef} onChange={handleFileUpload} accept=".pdf" className="hidden" />
-                </div>
-              </div>
+            <div className="absolute -bottom-1.5 left-1/2 -translate-x-1/2 w-3 h-3 bg-slate-900 rotate-45"></div>
+          </div>
+        )}
 
-              {/* Profil Fotoğrafı */}
-              <div className="bg-slate-50 p-3 sm:p-4 rounded-xl border border-slate-100">
-                <span className="text-xs font-bold text-slate-500 uppercase tracking-wider mb-3 block">2. Profil Fotoğrafı</span>
-                <div className="flex flex-col gap-4">
-                  <div className="flex flex-wrap sm:flex-nowrap items-center gap-4">
-                    <div 
-                      onClick={() => photoInputRef.current.click()}
-                      className="w-16 h-16 rounded-full bg-white border-2 border-dashed border-slate-300 flex items-center justify-center cursor-pointer hover:border-black transition-colors overflow-hidden group relative shadow-sm"
-                    >
-                      {profileImage ? (
-                        <div className="w-full h-full relative overflow-hidden pointer-events-none flex items-center justify-center bg-white">
-                          <img src={profileImage} alt="Profil" className="max-w-none origin-center" style={{ imageRendering: 'high-quality', objectFit: 'contain', width: '100%', height: '100%', transform: `translate(${photoPos.x}px, ${photoPos.y}px) scale(${photoZoom})` }} />
-                        </div>
-                      ) : <Camera className="w-6 h-6 text-slate-400 group-hover:text-black" />}
-                    </div>
-                    <div className="flex-1">
-                      <div className="flex gap-2 mb-2">
-                        <button onClick={() => photoInputRef.current.click()} className="text-[10px] bg-black text-white px-3 py-1.5 rounded-md font-bold hover:bg-slate-800 transition-colors border border-black shadow-sm">DOSYA SEÇ</button>
-                        {profileImage && <button onClick={() => setProfileImage(null)} className="text-[10px] bg-white text-slate-700 px-3 py-1.5 rounded-md font-bold hover:bg-slate-100 hover:text-black transition-colors border border-slate-200 shadow-sm">SİL</button>}
-                      </div>
-                      <div className="flex gap-2">
-                        {shapeOptions.map(shape => (
-                           <button key={shape.id} onClick={() => setPhotoShape(shape.id)} className={`p-1.5 border rounded-md transition-all ${photoShape === shape.id ? 'bg-black border-black text-white' : 'bg-white border-slate-200 text-slate-400 hover:border-slate-400'}`} title={shape.label}>
-                             <div className={`w-4 h-4 bg-current border border-current ${shape.iconClass}`}></div>
-                           </button>
-                        ))}
-                      </div>
-                    </div>
-                    <input type="file" ref={photoInputRef} onChange={handlePhotoUpload} accept="image/*" className="hidden" />
-                  </div>
-                  {profileImage && (
-                    <div className="px-1 flex flex-col gap-2">
-                      <div className="flex justify-between items-center text-[10px] font-bold text-slate-500"><span className="flex items-center gap-1 uppercase tracking-wider"><ZoomIn className="w-3 h-3"/> YAKINLAŞTIRMA</span><span>%{Math.round(photoZoom * 100)}</span></div>
-                      <input type="range" min="0.1" max="3" step="0.01" value={photoZoom} onChange={(e) => setPhotoZoom(parseFloat(e.target.value))} className="w-full h-1.5 bg-slate-200 rounded-lg appearance-none cursor-pointer accent-black" />
-                    </div>
-                  )}
+        <div className="max-w-[1400px] mx-auto grid grid-cols-1 lg:grid-cols-12 gap-4 lg:gap-8 min-h-screen lg:h-full lg:overflow-hidden">
+          
+          {/* --- SOL PANEL (GİRİŞ ALANI) --- */}
+          <div className="lg:col-span-5 space-y-4 lg:space-y-6 lg:h-full lg:overflow-y-auto pr-0 lg:pr-2 pb-10 lg:pb-20 scrollbar-thin scrollbar-thumb-black scrollbar-track-transparent">
+            <div className="bg-white p-4 sm:p-6 rounded-2xl shadow-sm border border-slate-200">
+              {/* LOGO ALANI */}
+              <div className="flex items-center gap-3 mb-6 lg:mb-8 select-none">
+                {/* --- KURUMSAL SİYAH/ANTRASİT SVG LOGO BAŞLANGICI --- */}
+                <svg
+                  xmlns="http://www.w3.org/2000/svg"
+                  viewBox="0 0 24 24"
+                  fill="currentColor"
+                  className="w-12 h-12 sm:w-14 sm:h-14 mr-1 filter drop-shadow-[0_4px_6px_rgba(0,0,0,0.2)] hover:scale-105 transition-transform duration-300 ease-in-out"
+                >
+                  <defs>
+                    <linearGradient id="slate-gradient" x1="0%" y1="0%" x2="100%" y2="100%">
+                      <stop offset="0%" style={{ stopColor: "#6C6D74", stopOpacity: 1 }} />
+                      <stop offset="50%" style={{ stopColor: "#262E36", stopOpacity: 1 }} />
+                      <stop offset="100%" style={{ stopColor: "#000000", stopOpacity: 1 }} />
+                    </linearGradient>
+                  </defs>
+                  <path
+                    fill="url(#slate-gradient)"
+                    d="M5.625 1.5c-1.036 0-1.875.84-1.875 1.875v17.25c0 1.035.84 1.875 1.875 1.875h12.75c1.035 0 1.875-.84 1.875-1.875V1.5H5.625z"
+                  />
+                  <path
+                    fill="#FFFFFF"
+                    d="M10.58 15.75l-3.48-3.48 1.06-1.06 2.42 2.42 6.23-6.23 1.06 1.06-7.29 7.29z"
+                    className="drop-shadow-sm"
+                  />
+                  <path
+                    fill="url(#slate-gradient)"
+                    d="M18.375 1.5h1.875v5.25h-5.25V1.5h3.375z"
+                    opacity="0.85"
+                  />
+                </svg>
+                {/* --- KURUMSAL SİYAH/ANTRASİT SVG LOGO BİTİŞİ --- */}
+
+                <div className="flex flex-col justify-center">
+                  <span className="text-2xl sm:text-3xl font-black text-transparent bg-clip-text bg-gradient-to-r from-slate-600 via-slate-800 to-black tracking-tight leading-tight">
+                    Hazır CV
+                  </span>
+                  <span className="text-[10px] sm:text-xs text-slate-500 font-bold tracking-widest uppercase ml-0.5 mt-0.5">
+                    Profesyonel Kariyer Asistanı
+                  </span>
                 </div>
               </div>
               
-              {/* İş İlanı */}
-              <label className="block">
-                <span className="text-xs font-bold text-slate-500 uppercase tracking-wider mb-2 block">3. Hedef İş İlanı</span>
-                <textarea className="w-full h-24 lg:h-32 p-3 bg-slate-50 border border-slate-200 rounded-xl text-xs focus:ring-2 focus:ring-black focus:border-transparent outline-none placeholder-slate-400 transition-all" value={jobDescription} onChange={(e) => setJobDescription(e.target.value)} placeholder="İş tanımını buraya yapıştırın..." />
-              </label>
-
-              {/* Tasarım ve Özelleştirme */}
-              <div className="bg-slate-50 p-4 sm:p-5 rounded-xl border border-slate-100 space-y-5">
-                <div className="flex items-center gap-2 border-b border-slate-200 pb-2 mb-2">
-                    <Settings2 className="w-4 h-4 text-black" />
-                    <span className="text-sm font-bold text-slate-700">4. Tasarım ve Özelleştirme</span>
+              <div className="space-y-5 lg:space-y-6">
+                {/* PDF Yükleme */}
+                <div className="block">
+                  <span className="text-xs font-bold text-slate-500 uppercase tracking-wider mb-2 block">1. Mevcut CV'nizi Yükleyin</span>
+                  <div className="flex items-center gap-2">
+                    <button 
+                      onClick={() => fileInputRef.current.click()} 
+                      className={`flex-1 flex items-center justify-center gap-2 border-2 border-dashed ${originalCV ? 'border-black bg-slate-100 text-black' : 'bg-white border-slate-300 text-slate-500'} p-4 sm:p-5 rounded-xl hover:border-slate-800 hover:bg-slate-50 transition-all text-sm font-medium group`}
+                      disabled={isPdfLoading}
+                    >
+                      {isPdfLoading ? <><RefreshCw className="w-4 h-4 animate-spin" /><span>Okunuyor...</span></> : originalCV ? <><FileCheck className="w-4 h-4" /><span>PDF Yüklendi</span></> : <><Upload className="w-4 h-4 group-hover:-translate-y-0.5 transition-transform" /><span>PDF Seçin</span></>}
+                    </button>
+                    {originalCV && (
+                      <button onClick={clearPdfData} className="p-4 sm:p-5 bg-white text-slate-400 border border-slate-300 rounded-xl hover:bg-slate-100 hover:text-black transition-colors" title="PDF'i Kaldır">
+                        <Trash2 className="w-4 h-4" />
+                      </button>
+                    )}
+                    <input type="file" ref={fileInputRef} onChange={handleFileUpload} accept=".pdf" className="hidden" />
+                  </div>
                 </div>
 
-                {/* Şablon */}
-                <div>
-                    <span className="text-xs font-bold text-slate-500 mb-2 block flex items-center gap-1"><LayoutTemplate className="w-3 h-3"/> Şablon</span>
-                    <div className="grid grid-cols-2 sm:grid-cols-3 gap-2">{templateOptions.map((template) => (<button key={template.id} onClick={() => setActiveTemplate(template.id)} className={`flex flex-col items-center justify-center p-2 sm:p-3 rounded-lg border transition-all ${activeTemplate === template.id ? 'bg-black border-black shadow-md text-white' : 'bg-white border-slate-200 text-slate-500 hover:border-slate-300'}`}>{template.icon}<span className="text-[10px] font-bold mt-1.5">{template.name}</span></button>))}</div>
-                </div>
-
-                {/* Renk ve İkonlar */}
-                <div>
-                    <div className="flex flex-col sm:flex-row justify-between sm:items-center gap-2 mb-2">
-                        <span className="text-xs font-bold text-slate-500 flex items-center gap-1"><Palette className="w-3 h-3"/> Renk & İkonlar</span>
+                {/* Profil Fotoğrafı */}
+                <div className="bg-slate-50 p-3 sm:p-4 rounded-xl border border-slate-100">
+                  <span className="text-xs font-bold text-slate-500 uppercase tracking-wider mb-3 block">2. Profil Fotoğrafı</span>
+                  <div className="flex flex-col gap-4">
+                    <div className="flex flex-wrap sm:flex-nowrap items-center gap-4">
+                      <div 
+                        onClick={() => photoInputRef.current.click()}
+                        className="w-16 h-16 rounded-full bg-white border-2 border-dashed border-slate-300 flex items-center justify-center cursor-pointer hover:border-black transition-colors overflow-hidden group relative shadow-sm"
+                      >
+                        {profileImage ? (
+                          <div className="w-full h-full relative overflow-hidden pointer-events-none flex items-center justify-center bg-white">
+                            <img src={profileImage} alt="Profil" className="max-w-none origin-center" style={{ imageRendering: 'high-quality', objectFit: 'contain', width: '100%', height: '100%', transform: `translate(${photoPos.x}px, ${photoPos.y}px) scale(${photoZoom})` }} />
+                          </div>
+                        ) : <Camera className="w-6 h-6 text-slate-400 group-hover:text-black" />}
+                      </div>
+                      <div className="flex-1">
+                        <div className="flex gap-2 mb-2">
+                          <button onClick={() => photoInputRef.current.click()} className="text-[10px] bg-black text-white px-3 py-1.5 rounded-md font-bold hover:bg-slate-800 transition-colors border border-black shadow-sm">DOSYA SEÇ</button>
+                          {profileImage && <button onClick={() => setProfileImage(null)} className="text-[10px] bg-white text-slate-700 px-3 py-1.5 rounded-md font-bold hover:bg-slate-100 hover:text-black transition-colors border border-slate-200 shadow-sm">SİL</button>}
+                        </div>
                         <div className="flex gap-2">
-                          <button onClick={() => setShowHighlights(!showHighlights)} className={`text-[9px] font-bold px-2 py-1 rounded transition-colors border flex items-center gap-1 flex-1 sm:flex-none justify-center ${showHighlights ? 'bg-black text-white border-black' : 'bg-white text-slate-500 border-slate-200'}`}>
-                             <Highlighter className="w-3 h-3" /> {showHighlights ? 'Vurgular Açık' : 'Vurgular Kapalı'}
-                          </button>
-                           
-                          <button onClick={() => setShowIcons(!showIcons)} className={`text-[9px] font-bold px-2 py-1 rounded transition-colors border flex-1 sm:flex-none justify-center ${showIcons ? 'bg-black text-white border-black' : 'bg-white text-slate-500 border-slate-200'}`}>{showIcons ? 'İkonlar Açık' : 'İkonlar Kapalı'}</button>
-                        </div>
-                    </div>
-                    <div className="flex items-center gap-2 flex-wrap pb-2"> 
-                      {colorPresets.map((color) => (<button key={color.hex} onClick={() => setThemeColor(color.hex)} className={`w-8 h-8 rounded-full transition-all border-2 flex-shrink-0 ${themeColor === color.hex ? 'border-white ring-2 ring-slate-400 scale-110 shadow-sm' : 'border-transparent hover:scale-105'}`} style={{ backgroundColor: color.hex }} title={color.name} />))}
-                      <div className="w-px h-6 bg-slate-300 mx-1 flex-shrink-0"></div> 
-                      <label className={`w-8 h-8 rounded-full border-2 flex items-center justify-center cursor-pointer relative overflow-hidden flex-shrink-0 transition-all ${!colorPresets.some(c => c.hex === themeColor) ? 'bg-white border-white ring-2 ring-slate-400' : 'bg-white border-slate-200 hover:border-slate-300'}`} title="Özel Renk Seç">
-                        <input type="color" value={themeColor} onChange={(e) => setThemeColor(e.target.value)} className="opacity-0 absolute inset-0 w-full h-full cursor-pointer" />
-                        <div className="w-full h-full flex items-center justify-center bg-white text-slate-400 hover:bg-slate-50 transition-colors"><Plus className="w-4 h-4" /></div>
-                      </label>
-                    </div>
-                </div>
-
-                {/* Dil ve Hizalama */}
-                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                    {/* Dil */}
-                    <div>
-                        <span className="text-xs font-bold text-slate-500 mb-2 block flex items-center gap-1"><PenTool className="w-3 h-3"/> Anlatım Dili</span>
-                        <div className="grid grid-cols-2 gap-2">
-                          <button onClick={() => setNarrativeVoice('first')} className={`p-2 rounded-lg border text-[10px] font-bold transition-all ${narrativeVoice === 'first' ? 'bg-black border-black text-white shadow-sm' : 'bg-white border-slate-200 text-slate-500 hover:border-slate-300'}`}>1. Tekil (Yaptım)</button>
-                          <button onClick={() => setNarrativeVoice('third')} className={`p-2 rounded-lg border text-[10px] font-bold transition-all ${narrativeVoice === 'third' ? 'bg-black border-black text-white shadow-sm' : 'bg-white border-slate-200 text-slate-500 hover:border-slate-300'}`}>3. Tekil (Yaptı)</button>
-                        </div>
-                    </div>
-                    {/* Metin Hizalama */}
-                    <div>
-                        <span className="text-xs font-bold text-slate-500 mb-2 block flex items-center gap-1"><AlignJustify className="w-3 h-3"/> Metin Hizalama</span>
-                        <div className="flex bg-white rounded-lg border border-slate-200 p-1 gap-1">
-                          {alignmentOptions.map((option) => (
-                            <button
-                              key={option.id}
-                              onClick={() => setTextAlign(option.id)}
-                              className={`flex-1 flex items-center justify-center p-1.5 rounded transition-all ${textAlign === option.id ? 'bg-slate-100 text-slate-900 shadow-sm' : 'text-slate-400 hover:bg-slate-50 hover:text-slate-600'}`}
-                              title={option.label}
-                            >
-                              {option.icon}
-                            </button>
+                          {shapeOptions.map(shape => (
+                             <button key={shape.id} onClick={() => setPhotoShape(shape.id)} className={`p-1.5 border rounded-md transition-all ${photoShape === shape.id ? 'bg-black border-black text-white' : 'bg-white border-slate-200 text-slate-400 hover:border-slate-400'}`} title={shape.label}>
+                               <div className={`w-4 h-4 bg-current border border-current ${shape.iconClass}`}></div>
+                             </button>
                           ))}
                         </div>
+                      </div>
+                      <input type="file" ref={photoInputRef} onChange={handlePhotoUpload} accept="image/*" className="hidden" />
                     </div>
+                    {profileImage && (
+                      <div className="px-1 flex flex-col gap-2">
+                        <div className="flex justify-between items-center text-[10px] font-bold text-slate-500"><span className="flex items-center gap-1 uppercase tracking-wider"><ZoomIn className="w-3 h-3"/> YAKINLAŞTIRMA</span><span>%{Math.round(photoZoom * 100)}</span></div>
+                        <input type="range" min="0.1" max="3" step="0.01" value={photoZoom} onChange={(e) => setPhotoZoom(parseFloat(e.target.value))} className="w-full h-1.5 bg-slate-200 rounded-lg appearance-none cursor-pointer accent-black" />
+                      </div>
+                    )}
+                  </div>
                 </div>
-              </div>
+                
+                {/* İş İlanı */}
+                <label className="block">
+                  <span className="text-xs font-bold text-slate-500 uppercase tracking-wider mb-2 block">3. Hedef İş İlanı</span>
+                  <textarea className="w-full h-24 lg:h-32 p-3 bg-slate-50 border border-slate-200 rounded-xl text-xs focus:ring-2 focus:ring-black focus:border-transparent outline-none placeholder-slate-400 transition-all" value={jobDescription} onChange={(e) => setJobDescription(e.target.value)} placeholder="İş tanımını buraya yapıştırın..." />
+                </label>
 
-              {/* Aksiyon Butonları */}
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 sm:gap-4">
-                <button onClick={() => handleOptimize('tr')} disabled={isLoading} className="bg-black text-white border-2 border-black font-bold py-3 sm:py-4 rounded-xl shadow-lg shadow-slate-200 transition-all flex items-center justify-center gap-2 hover:bg-slate-800 active:scale-[0.98] disabled:opacity-50 disabled:cursor-not-allowed text-sm sm:text-base">{isLoading && cvLanguage === 'tr' ? <RefreshCw className="w-5 h-5 animate-spin" /> : <Sparkles className="w-5 h-5" />} Türkçe CV Tasarla</button>
-                <button onClick={() => handleOptimize('en')} disabled={isLoading} className="bg-white text-slate-900 border-2 border-slate-200 font-bold py-3 sm:py-4 rounded-xl shadow-sm transition-all flex items-center justify-center gap-2 hover:border-slate-400 hover:bg-slate-50 active:scale-[0.98] disabled:opacity-50 disabled:cursor-not-allowed text-sm sm:text-base">{isLoading && cvLanguage === 'en' ? <RefreshCw className="w-5 h-5 animate-spin" /> : <Globe className="w-5 h-5" />} İngilizce CV Tasarla</button>
+                {/* Tasarım ve Özelleştirme */}
+                <div className="bg-slate-50 p-4 sm:p-5 rounded-xl border border-slate-100 space-y-5">
+                  <div className="flex items-center gap-2 border-b border-slate-200 pb-2 mb-2">
+                      <Settings2 className="w-4 h-4 text-black" />
+                      <span className="text-sm font-bold text-slate-700">4. Tasarım ve Özelleştirme</span>
+                  </div>
+
+                  {/* Şablon */}
+                  <div>
+                      <span className="text-xs font-bold text-slate-500 mb-2 block flex items-center gap-1"><LayoutTemplate className="w-3 h-3"/> Şablon</span>
+                      <div className="grid grid-cols-2 sm:grid-cols-3 gap-2">{templateOptions.map((template) => (<button key={template.id} onClick={() => setActiveTemplate(template.id)} className={`flex flex-col items-center justify-center p-2 sm:p-3 rounded-lg border transition-all ${activeTemplate === template.id ? 'bg-black border-black shadow-md text-white' : 'bg-white border-slate-200 text-slate-500 hover:border-slate-300'}`}>{template.icon}<span className="text-[10px] font-bold mt-1.5">{template.name}</span></button>))}</div>
+                  </div>
+
+                  {/* Renk ve İkonlar */}
+                  <div>
+                      <div className="flex flex-col sm:flex-row justify-between sm:items-center gap-2 mb-2">
+                          <span className="text-xs font-bold text-slate-500 flex items-center gap-1"><Palette className="w-3 h-3"/> Renk & İkonlar</span>
+                          <div className="flex gap-2">
+                            <button onClick={() => setShowHighlights(!showHighlights)} className={`text-[9px] font-bold px-2 py-1 rounded transition-colors border flex items-center gap-1 flex-1 sm:flex-none justify-center ${showHighlights ? 'bg-black text-white border-black' : 'bg-white text-slate-500 border-slate-200'}`}>
+                               <Highlighter className="w-3 h-3" /> {showHighlights ? 'Vurgular Açık' : 'Vurgular Kapalı'}
+                            </button>
+                             
+                            <button onClick={() => setShowIcons(!showIcons)} className={`text-[9px] font-bold px-2 py-1 rounded transition-colors border flex-1 sm:flex-none justify-center ${showIcons ? 'bg-black text-white border-black' : 'bg-white text-slate-500 border-slate-200'}`}>{showIcons ? 'İkonlar Açık' : 'İkonlar Kapalı'}</button>
+                          </div>
+                      </div>
+                      <div className="flex items-center gap-2 flex-wrap pb-2"> 
+                        {colorPresets.map((color) => (<button key={color.hex} onClick={() => setThemeColor(color.hex)} className={`w-8 h-8 rounded-full transition-all border-2 flex-shrink-0 ${themeColor === color.hex ? 'border-white ring-2 ring-slate-400 scale-110 shadow-sm' : 'border-transparent hover:scale-105'}`} style={{ backgroundColor: color.hex }} title={color.name} />))}
+                        <div className="w-px h-6 bg-slate-300 mx-1 flex-shrink-0"></div> 
+                        <label className={`w-8 h-8 rounded-full border-2 flex items-center justify-center cursor-pointer relative overflow-hidden flex-shrink-0 transition-all ${!colorPresets.some(c => c.hex === themeColor) ? 'bg-white border-white ring-2 ring-slate-400' : 'bg-white border-slate-200 hover:border-slate-300'}`} title="Özel Renk Seç">
+                          <input type="color" value={themeColor} onChange={(e) => setThemeColor(e.target.value)} className="opacity-0 absolute inset-0 w-full h-full cursor-pointer" />
+                          <div className="w-full h-full flex items-center justify-center bg-white text-slate-400 hover:bg-slate-50 transition-colors"><Plus className="w-4 h-4" /></div>
+                        </label>
+                      </div>
+                  </div>
+
+                  {/* Dil ve Hizalama */}
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                      {/* Dil */}
+                      <div>
+                          <span className="text-xs font-bold text-slate-500 mb-2 block flex items-center gap-1"><PenTool className="w-3 h-3"/> Anlatım Dili</span>
+                          <div className="grid grid-cols-2 gap-2">
+                            <button onClick={() => setNarrativeVoice('first')} className={`p-2 rounded-lg border text-[10px] font-bold transition-all ${narrativeVoice === 'first' ? 'bg-black border-black text-white shadow-sm' : 'bg-white border-slate-200 text-slate-500 hover:border-slate-300'}`}>1. Tekil (Yaptım)</button>
+                            <button onClick={() => setNarrativeVoice('third')} className={`p-2 rounded-lg border text-[10px] font-bold transition-all ${narrativeVoice === 'third' ? 'bg-black border-black text-white shadow-sm' : 'bg-white border-slate-200 text-slate-500 hover:border-slate-300'}`}>3. Tekil (Yaptı)</button>
+                          </div>
+                      </div>
+                      {/* Metin Hizalama */}
+                      <div>
+                          <span className="text-xs font-bold text-slate-500 mb-2 block flex items-center gap-1"><AlignJustify className="w-3 h-3"/> Metin Hizalama</span>
+                          <div className="flex bg-white rounded-lg border border-slate-200 p-1 gap-1">
+                            {alignmentOptions.map((option) => (
+                              <button
+                                key={option.id}
+                                onClick={() => setTextAlign(option.id)}
+                                className={`flex-1 flex items-center justify-center p-1.5 rounded transition-all ${textAlign === option.id ? 'bg-slate-100 text-slate-900 shadow-sm' : 'text-slate-400 hover:bg-slate-50 hover:text-slate-600'}`}
+                                title={option.label}
+                              >
+                                {option.icon}
+                              </button>
+                            ))}
+                          </div>
+                      </div>
+                  </div>
+                </div>
+
+                {/* Aksiyon Butonları */}
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 sm:gap-4">
+                  <button onClick={() => handleOptimize('tr')} disabled={isLoading} className="bg-black text-white border-2 border-black font-bold py-3 sm:py-4 rounded-xl shadow-lg shadow-slate-200 transition-all flex items-center justify-center gap-2 hover:bg-slate-800 active:scale-[0.98] disabled:opacity-50 disabled:cursor-not-allowed text-sm sm:text-base">{isLoading && cvLanguage === 'tr' ? <RefreshCw className="w-5 h-5 animate-spin" /> : <Sparkles className="w-5 h-5" />} Türkçe CV Tasarla</button>
+                  <button onClick={() => handleOptimize('en')} disabled={isLoading} className="bg-white text-slate-900 border-2 border-slate-200 font-bold py-3 sm:py-4 rounded-xl shadow-sm transition-all flex items-center justify-center gap-2 hover:border-slate-400 hover:bg-slate-50 active:scale-[0.98] disabled:opacity-50 disabled:cursor-not-allowed text-sm sm:text-base">{isLoading && cvLanguage === 'en' ? <RefreshCw className="w-5 h-5 animate-spin" /> : <Globe className="w-5 h-5" />} İngilizce CV Tasarla</button>
+                </div>
+                
+                {/* --- Mülakat Simülasyonu Butonu --- */}
+                <button 
+                  onClick={handleStartInterview} 
+                  className="w-full bg-black text-white border-2 border-black font-bold py-3 sm:py-4 rounded-xl shadow-md transition-all flex items-center justify-center gap-2 hover:bg-slate-800 active:scale-[0.98] text-sm sm:text-base"
+                >
+                  <MessageSquare className="w-5 h-5" /> Mülakat Simülasyonunu Başlat
+                </button>
+
+                {error && <p className="text-red-500 text-xs font-bold flex items-center gap-1"><AlertCircle className="w-4 h-4" /> {error}</p>}
               </div>
               
-              {/* --- Mülakat Simülasyonu Butonu --- */}
-              <button 
-                onClick={handleStartInterview} 
-                className="w-full bg-black text-white border-2 border-black font-bold py-3 sm:py-4 rounded-xl shadow-md transition-all flex items-center justify-center gap-2 hover:bg-slate-800 active:scale-[0.98] text-sm sm:text-base"
-              >
-                <MessageSquare className="w-5 h-5" /> Mülakat Simülasyonunu Başlat
-              </button>
-
-              {error && <p className="text-red-500 text-xs font-bold flex items-center gap-1"><AlertCircle className="w-4 h-4" /> {error}</p>}
+              {/* Analiz & Ekleme */}
+              {optimizedData && !isLoading && (
+                <>
+                  {optimizedData.analysis && (
+                    <div className="mt-8 pt-8 border-t border-slate-100 animate-in slide-in-from-top-4 duration-700">
+                      <h3 className="flex items-center gap-2 font-bold text-lg mb-4 text-slate-800"><BarChart3 className="w-5 h-5 text-black" />{translations[cvLanguage].analysisTitle}</h3>
+                      <div className="grid grid-cols-2 gap-4 mb-6">
+                        <div className="bg-white p-4 rounded-xl border border-slate-200 text-center"><span className="text-xs text-slate-400 font-bold uppercase block mb-1">{translations[cvLanguage].scoreBefore}</span><span className={`text-3xl font-black ${getScoreColor(optimizedData.analysis.original_score)}`}>%{optimizedData.analysis.original_score}</span></div>
+                        <div className="bg-slate-100 p-4 rounded-xl border border-slate-200 text-center relative overflow-hidden"><div className="absolute top-0 right-0 p-1"><TrendingUp className="w-4 h-4 text-black" /></div><span className="text-xs text-slate-600 font-bold uppercase block mb-1">{translations[cvLanguage].scoreAfter}</span><span className="text-3xl font-black text-black">%{optimizedData.analysis.optimized_score}</span></div>
+                      </div>
+                      <div className="space-y-4">
+                        <div className="bg-slate-100 p-4 rounded-xl border border-slate-200">
+                            <h4 className="flex items-center gap-2 text-sm font-bold text-slate-800 mb-2">
+                                <CheckCircle2 className="w-4 h-4" /> {translations[cvLanguage].matches}
+                            </h4>
+                            <ul className="space-y-1">
+                                {optimizedData.analysis.matches?.map((m, i) => (
+                                    <li key={i} className="text-xs text-slate-700 flex items-start gap-1.5"><Check className="w-3 h-3 mt-0.5 flex-shrink-0" /> {m}</li>
+                                ))}
+                            </ul>
+                        </div>
+                        <div className="bg-slate-100 p-4 rounded-xl border border-slate-200">
+                            <h4 className="flex items-center gap-2 text-sm font-bold text-slate-800 mb-2">
+                                <AlertTriangle className="w-4 h-4" /> {translations[cvLanguage].gaps}
+                            </h4>
+                            <ul className="space-y-1">
+                                {optimizedData.analysis.gaps?.map((g, i) => (
+                                    <li key={i} className="text-xs text-slate-700 flex items-start gap-1.5"><XCircle className="w-3 h-3 mt-0.5 flex-shrink-0" /> {g}</li>
+                                ))}
+                            </ul>
+                        </div>
+                        <div className="bg-slate-100 p-4 rounded-xl border border-slate-200">
+                            <h4 className="flex items-center gap-2 text-sm font-bold text-slate-800 mb-2">
+                                <Lightbulb className="w-4 h-4" /> {translations[cvLanguage].added}
+                            </h4>
+                            <ul className="space-y-1">
+                                {optimizedData.analysis.additions?.map((a, i) => (
+                                    <li key={i} className="text-xs text-slate-700 flex items-start gap-1.5"><PlusCircle className="w-3 h-3 mt-0.5 flex-shrink-0" /> {a}</li>
+                                ))}
+                            </ul>
+                        </div>
+                      </div>
+                    </div>
+                  )}
+                   <div className="mt-8 pt-8 border-t border-slate-100 animate-in slide-in-from-top-4 duration-700">
+                     <h3 className="flex items-center gap-2 font-bold text-lg mb-2 text-slate-800"><Wand2 className="w-5 h-5 text-black" />{translations[cvLanguage].addItemTitle}</h3>
+                     <p className="text-xs text-slate-500 mb-4">{translations[cvLanguage].addItemDesc}</p>
+                     <div className="space-y-3">
+                       <select value={addItemSection} onChange={(e) => setAddItemSection(e.target.value)} className="w-full p-3 bg-white border border-slate-200 rounded-xl text-xs font-medium text-slate-700 focus:ring-2 focus:ring-black outline-none">
+                         {sectionOptions.map(opt => (<option key={opt.id} value={opt.id}>{cvLanguage === 'tr' ? opt.labelTr : opt.labelEn}</option>))}
+                       </select>
+                       {/* --- YENİ BAŞLIK GİRİŞİ --- */}
+                       {(addItemSection === 'custom' || addItemSection === 'contactLink') && (
+                          <input 
+                             type="text" 
+                             value={addItemTitle} 
+                             onChange={(e) => setAddItemTitle(e.target.value)} 
+                             placeholder={
+                                addItemSection === 'contactLink' 
+                                ? (cvLanguage === 'tr' ? "Bağlantı Adı (Örn: GitHub, Portfolio)" : "Link Name (e.g. GitHub, Portfolio)")
+                                : (cvLanguage === 'tr' ? "Bölüm Başlığı (Örn: Projeler, Sertifikalar)" : "Section Title (e.g. Projects, Certificates)")
+                             }
+                             className="w-full p-3 bg-white border-2 border-slate-300 rounded-xl text-xs focus:ring-2 focus:ring-black outline-none font-bold text-black placeholder-slate-400"
+                          />
+                       )}
+                       <textarea value={addItemInput} onChange={(e) => setAddItemInput(e.target.value)} placeholder={cvLanguage === 'tr' ? "Örn: Geçen yaz freelance olarak bir React projesi yaptım..." : "Ex: I worked on a freelance React project last summer..."} className="w-full h-24 p-3 bg-white border border-slate-200 rounded-xl text-xs text-slate-700 focus:ring-2 focus:ring-black outline-none resize-none placeholder-slate-400" />
+                       <button onClick={handleAddItem} disabled={isAddingItem || !addItemInput.trim() || ((addItemSection === 'custom' || addItemSection === 'contactLink') && !addItemTitle.trim())} className="w-full bg-black text-white font-bold py-3 rounded-xl shadow-md transition-all flex items-center justify-center gap-2 hover:bg-slate-800 active:scale-[0.98] disabled:opacity-50 disabled:cursor-not-allowed">
+                         {isAddingItem ? <RefreshCw className="w-4 h-4 animate-spin" /> : <Plus className="w-4 h-4" />} {translations[cvLanguage].addBtn}
+                       </button>
+                     </div>
+                  </div>
+                </>
+              )}
             </div>
+          </div>
+
+          {/* --- SAĞ PANEL (ÖNİZLEME ALANI) --- */}
+          <div ref={mobilePreviewRef} className="lg:col-span-7 flex flex-col bg-slate-100/50 lg:rounded-xl border-t lg:border border-slate-200/60 overflow-hidden min-h-[70vh] lg:h-full">
             
-            {/* Analiz & Ekleme */}
-            {optimizedData && !isLoading && (
-              <>
-                {optimizedData.analysis && (
-                  <div className="mt-8 pt-8 border-t border-slate-100 animate-in slide-in-from-top-4 duration-700">
-                    <h3 className="flex items-center gap-2 font-bold text-lg mb-4 text-slate-800"><BarChart3 className="w-5 h-5 text-black" />{translations[cvLanguage].analysisTitle}</h3>
-                    <div className="grid grid-cols-2 gap-4 mb-6">
-                      <div className="bg-white p-4 rounded-xl border border-slate-200 text-center"><span className="text-xs text-slate-400 font-bold uppercase block mb-1">{translations[cvLanguage].scoreBefore}</span><span className={`text-3xl font-black ${getScoreColor(optimizedData.analysis.original_score)}`}>%{optimizedData.analysis.original_score}</span></div>
-                      <div className="bg-slate-100 p-4 rounded-xl border border-slate-200 text-center relative overflow-hidden"><div className="absolute top-0 right-0 p-1"><TrendingUp className="w-4 h-4 text-black" /></div><span className="text-xs text-slate-600 font-bold uppercase block mb-1">{translations[cvLanguage].scoreAfter}</span><span className="text-3xl font-black text-black">%{optimizedData.analysis.optimized_score}</span></div>
-                    </div>
-                    <div className="space-y-4">
-                      <div className="bg-slate-100 p-4 rounded-xl border border-slate-200">
-                          <h4 className="flex items-center gap-2 text-sm font-bold text-slate-800 mb-2">
-                              <CheckCircle2 className="w-4 h-4" /> {translations[cvLanguage].matches}
-                          </h4>
-                          <ul className="space-y-1">
-                              {optimizedData.analysis.matches?.map((m, i) => (
-                                  <li key={i} className="text-xs text-slate-700 flex items-start gap-1.5"><Check className="w-3 h-3 mt-0.5 flex-shrink-0" /> {m}</li>
-                              ))}
-                          </ul>
-                      </div>
-                      <div className="bg-slate-100 p-4 rounded-xl border border-slate-200">
-                          <h4 className="flex items-center gap-2 text-sm font-bold text-slate-800 mb-2">
-                              <AlertTriangle className="w-4 h-4" /> {translations[cvLanguage].gaps}
-                          </h4>
-                          <ul className="space-y-1">
-                              {optimizedData.analysis.gaps?.map((g, i) => (
-                                  <li key={i} className="text-xs text-slate-700 flex items-start gap-1.5"><XCircle className="w-3 h-3 mt-0.5 flex-shrink-0" /> {g}</li>
-                              ))}
-                          </ul>
-                      </div>
-                      <div className="bg-slate-100 p-4 rounded-xl border border-slate-200">
-                          <h4 className="flex items-center gap-2 text-sm font-bold text-slate-800 mb-2">
-                              <Lightbulb className="w-4 h-4" /> {translations[cvLanguage].added}
-                          </h4>
-                          <ul className="space-y-1">
-                              {optimizedData.analysis.additions?.map((a, i) => (
-                                  <li key={i} className="text-xs text-slate-700 flex items-start gap-1.5"><PlusCircle className="w-3 h-3 mt-0.5 flex-shrink-0" /> {a}</li>
-                              ))}
-                          </ul>
-                      </div>
-                    </div>
-                  </div>
-                )}
-                 <div className="mt-8 pt-8 border-t border-slate-100 animate-in slide-in-from-top-4 duration-700">
-                   <h3 className="flex items-center gap-2 font-bold text-lg mb-2 text-slate-800"><Wand2 className="w-5 h-5 text-black" />{translations[cvLanguage].addItemTitle}</h3>
-                   <p className="text-xs text-slate-500 mb-4">{translations[cvLanguage].addItemDesc}</p>
-                   <div className="space-y-3">
-                     <select value={addItemSection} onChange={(e) => setAddItemSection(e.target.value)} className="w-full p-3 bg-white border border-slate-200 rounded-xl text-xs font-medium text-slate-700 focus:ring-2 focus:ring-black outline-none">
-                       {sectionOptions.map(opt => (<option key={opt.id} value={opt.id}>{cvLanguage === 'tr' ? opt.labelTr : opt.labelEn}</option>))}
-                     </select>
-                     {/* --- YENİ BAŞLIK GİRİŞİ --- */}
-                     {(addItemSection === 'custom' || addItemSection === 'contactLink') && (
-                        <input 
-                           type="text" 
-                           value={addItemTitle} 
-                           onChange={(e) => setAddItemTitle(e.target.value)} 
-                           placeholder={
-                              addItemSection === 'contactLink' 
-                              ? (cvLanguage === 'tr' ? "Bağlantı Adı (Örn: GitHub, Portfolio)" : "Link Name (e.g. GitHub, Portfolio)")
-                              : (cvLanguage === 'tr' ? "Bölüm Başlığı (Örn: Projeler, Sertifikalar)" : "Section Title (e.g. Projects, Certificates)")
-                           }
-                           className="w-full p-3 bg-white border-2 border-slate-300 rounded-xl text-xs focus:ring-2 focus:ring-black outline-none font-bold text-black placeholder-slate-400"
-                        />
-                     )}
-                     <textarea value={addItemInput} onChange={(e) => setAddItemInput(e.target.value)} placeholder={cvLanguage === 'tr' ? "Örn: Geçen yaz freelance olarak bir React projesi yaptım..." : "Ex: I worked on a freelance React project last summer..."} className="w-full h-24 p-3 bg-white border border-slate-200 rounded-xl text-xs text-slate-700 focus:ring-2 focus:ring-black outline-none resize-none placeholder-slate-400" />
-                     <button onClick={handleAddItem} disabled={isAddingItem || !addItemInput.trim() || ((addItemSection === 'custom' || addItemSection === 'contactLink') && !addItemTitle.trim())} className="w-full bg-black text-white font-bold py-3 rounded-xl shadow-md transition-all flex items-center justify-center gap-2 hover:bg-slate-800 active:scale-[0.98] disabled:opacity-50 disabled:cursor-not-allowed">
-                       {isAddingItem ? <RefreshCw className="w-4 h-4 animate-spin" /> : <Plus className="w-4 h-4" />} {translations[cvLanguage].addBtn}
-                     </button>
-                   </div>
+            {/* SABİT BAŞLIK */}
+            <div className="sticky top-0 lg:relative flex-shrink-0 bg-white/95 backdrop-blur-md p-3 sm:p-4 border-b border-slate-200 shadow-sm z-[60] flex flex-col sm:flex-row justify-between items-center gap-3 sm:gap-0">
+                <div className="flex items-center gap-2">
+                  <div className="w-2 h-2 rounded-full bg-green-500 animate-pulse"></div>
+                  <h2 className="font-bold text-slate-600 uppercase tracking-widest text-xs">Canlı Önizleme ({cvLanguage.toUpperCase()})</h2>
                 </div>
-              </>
-            )}
-          </div>
-        </div>
+                <div className="flex w-full sm:w-auto gap-2">
+                  {optimizedData && !isLoading && (
+                    <>
+                      <button onClick={copyAsText} className="flex-1 sm:flex-none justify-center text-xs bg-white text-slate-700 border border-slate-200 px-3 sm:px-4 py-2 rounded-lg font-bold flex items-center gap-2 hover:bg-slate-50 transition-colors shadow-sm">{copySuccess ? <CheckCircle2 className="w-4 h-4 text-green-500" /> : <Copy className="w-4 h-4 text-slate-400" />} KOPYALA</button>
+                      <button onClick={handleDownloadPdf} disabled={isDownloading} className="flex-1 sm:flex-none justify-center text-xs bg-black text-white px-3 sm:px-4 py-2 rounded-lg font-bold flex items-center gap-2 shadow-md transition-all active:scale-95 disabled:opacity-50 hover:bg-slate-800">{isDownloading ? <RefreshCw className="w-4 h-4 animate-spin" /> : <Download className="w-4 h-4" />} PDF İNDİR</button>
+                    </>
+                  )}
+                </div>
+            </div>
 
-        {/* --- SAĞ PANEL (ÖNİZLEME ALANI) --- */}
-        <div ref={mobilePreviewRef} className="lg:col-span-7 flex flex-col bg-slate-100/50 lg:rounded-xl border-t lg:border border-slate-200/60 overflow-hidden min-h-[70vh] lg:h-full">
-          
-          {/* SABİT BAŞLIK */}
-          <div className="sticky top-0 lg:relative flex-shrink-0 bg-white/95 backdrop-blur-md p-3 sm:p-4 border-b border-slate-200 shadow-sm z-[60] flex flex-col sm:flex-row justify-between items-center gap-3 sm:gap-0">
-              <div className="flex items-center gap-2">
-                <div className="w-2 h-2 rounded-full bg-green-500 animate-pulse"></div>
-                <h2 className="font-bold text-slate-600 uppercase tracking-widest text-xs">Canlı Önizleme ({cvLanguage.toUpperCase()})</h2>
-              </div>
-              <div className="flex w-full sm:w-auto gap-2">
-                {optimizedData && !isLoading && (
-                  <>
-                    <button onClick={copyAsText} className="flex-1 sm:flex-none justify-center text-xs bg-white text-slate-700 border border-slate-200 px-3 sm:px-4 py-2 rounded-lg font-bold flex items-center gap-2 hover:bg-slate-50 transition-colors shadow-sm">{copySuccess ? <CheckCircle2 className="w-4 h-4 text-green-500" /> : <Copy className="w-4 h-4 text-slate-400" />} KOPYALA</button>
-                    <button onClick={handleDownloadPdf} disabled={isDownloading} className="flex-1 sm:flex-none justify-center text-xs bg-black text-white px-3 sm:px-4 py-2 rounded-lg font-bold flex items-center gap-2 shadow-md transition-all active:scale-95 disabled:opacity-50 hover:bg-slate-800">{isDownloading ? <RefreshCw className="w-4 h-4 animate-spin" /> : <Download className="w-4 h-4" />} PDF İNDİR</button>
-                  </>
-                )}
-              </div>
-          </div>
-
-          {/* SCROLL EDİLEBİLİR CV ALANI */}
-          <div className="flex-1 overflow-y-auto overflow-x-hidden p-2 sm:p-4 pb-20 scrollbar-thin scrollbar-thumb-black scrollbar-track-transparent" ref={previewContainerRef}>
-            <div className="flex justify-center items-start min-h-[1123px]"> 
-              <div 
-                id="resume-preview" 
-                ref={resumeRef}
-                className={`bg-white relative overflow-hidden select-none ${activeTemplate === 'classic' || activeTemplate === 'bold' ? 'font-serif' : 'font-sans'}`} 
-                style={{ 
-                   width: '794px',
-                   height: '1123px',
-                   boxShadow: '0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 8px 10px -6px rgba(0, 0, 0, 0.1)', 
-                   paddingTop: activeTemplate === 'professional' ? '40px' : '32px',
-                   paddingRight: activeTemplate === 'professional' ? '40px' : '32px',
-                   paddingLeft: activeTemplate === 'professional' ? '40px' : '32px',
-                   paddingBottom: '0px',
-                   transform: `scale(${previewScale})`,
-                   transformOrigin: 'top center',
-                   marginBottom: `${(1123 * previewScale) - 1123}px` 
-                }} 
-              >
+            {/* SCROLL EDİLEBİLİR CV ALANI */}
+            <div className="flex-1 overflow-y-auto overflow-x-hidden p-2 sm:p-4 pb-20 scrollbar-thin scrollbar-thumb-black scrollbar-track-transparent" ref={previewContainerRef}>
+              
+              {/* 1. DÜZELTME: Veri yoksa ince uzun A4 kağıdı gösterme, ekrana tam oturan standart boşluk göster */}
+              {!isLoading && !optimizedData ? (
+                <div className="h-full min-h-[60vh] flex flex-col items-center justify-center space-y-4 opacity-40 select-none">
+                  <FileText className="w-16 h-16 lg:w-20 lg:h-20" style={{ color: themeColor }} />
+                  <p className="text-[13px] lg:text-[15px] font-bold tracking-widest uppercase text-center px-8 text-slate-900">Verileri doldurun ve bir dil seçerek tasarlayın</p>
+                </div>
+              ) : (
                 
-                {/* --- MODERN LOADING VE OYUN ALANI (LIGHT MODE) --- */}
-                {isLoading ? (
-                  <div className="h-full flex flex-col items-center justify-center p-12 animate-in fade-in duration-500 bg-white absolute inset-0 z-50 relative overflow-hidden select-none">
-                      
-                      {/* OYUN HEDEFLERİ (TARGETS) */}
-                      {gameTargets.map(target => (
-                          <div 
-                              key={target.id}
-                              className="absolute cursor-pointer animate-bounce transition-transform active:scale-90 z-20"
-                              style={{ left: `${target.x}%`, top: `${target.y}%` }}
-                              onMouseDown={() => handleGameClick(target.id)}
-                              onTouchStart={() => handleGameClick(target.id)} 
-                          >
-                              {target.type === 'briefcase' && <Briefcase className="w-8 h-8 text-slate-700 drop-shadow-md" />}
-                              {target.type === 'star' && <Star className="w-8 h-8 text-slate-500 fill-slate-500 drop-shadow-md" />}
-                              {target.type === 'money' && <Banknote className="w-8 h-8 text-slate-600 drop-shadow-md" />}
-                              {target.type === 'coffee' && <Coffee className="w-8 h-8 text-slate-800 drop-shadow-md" />}
-                          </div>
-                      ))}
-
-                      <div className="relative w-24 h-24 sm:w-32 sm:h-32 flex items-center justify-center mb-8 pointer-events-none z-10">
-                          <div className="absolute inset-0 bg-slate-200 rounded-full animate-ping opacity-20"></div>
-                          <div className="absolute inset-2 bg-slate-100 rounded-full animate-pulse"></div>
+                /* 2. DÜZELTME: Veri varsa A4 boyutunu göster ve aşağıdaki gereksiz boşluğu yok etmek için dinamik yükseklik ver */
+                <div className="flex justify-center items-start transition-all duration-300" style={{ height: `${1123 * previewScale}px` }}> 
+                  <div 
+                    id="resume-preview" 
+                    ref={resumeRef}
+                    className={`bg-white relative overflow-hidden select-none ${activeTemplate === 'classic' || activeTemplate === 'bold' ? 'font-serif' : 'font-sans'}`} 
+                    style={{ 
+                       width: '794px',
+                       height: '1123px',
+                       boxShadow: '0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 8px 10px -6px rgba(0, 0, 0, 0.1)', 
+                       paddingTop: activeTemplate === 'professional' ? '40px' : '32px',
+                       paddingRight: activeTemplate === 'professional' ? '40px' : '32px',
+                       paddingLeft: activeTemplate === 'professional' ? '40px' : '32px',
+                       paddingBottom: '0px',
+                       transform: `scale(${previewScale})`,
+                       transformOrigin: 'top center'
+                       /* marginBottom satırını sildik çünkü yüksekliği dinamik yaptık */
+                    }} 
+                  >
+                    
+                    {/* --- MODERN LOADING VE OYUN ALANI (LIGHT MODE) --- */}
+                    {isLoading ? (
+                      <div className="h-full flex flex-col items-center justify-center p-12 animate-in fade-in duration-500 bg-white absolute inset-0 z-50 relative overflow-hidden select-none">
                           
-                          <div className="relative z-10 text-black">
-                              {loadingProgress < 30 && <FileSearch className="w-10 h-10 sm:w-12 sm:h-12 animate-bounce" />}
-                              {loadingProgress >= 30 && loadingProgress < 60 && <Cpu className="w-10 h-10 sm:w-12 sm:h-12 animate-spin-slow" />}
-                              {loadingProgress >= 60 && <PenLine className="w-10 h-10 sm:w-12 sm:h-12 animate-pulse" />}
+                          {/* OYUN HEDEFLERİ (TARGETS) */}
+                          {gameTargets.map(target => (
+                              <div 
+                                  key={target.id}
+                                  className="absolute cursor-pointer animate-bounce transition-transform active:scale-90 z-20"
+                                  style={{ left: `${target.x}%`, top: `${target.y}%` }}
+                                  onMouseDown={() => handleGameClick(target.id)}
+                                  onTouchStart={() => handleGameClick(target.id)} 
+                              >
+                                  {target.type === 'briefcase' && <Briefcase className="w-8 h-8 text-slate-700 drop-shadow-md" />}
+                                  {target.type === 'star' && <Star className="w-8 h-8 text-slate-500 fill-slate-500 drop-shadow-md" />}
+                                  {target.type === 'money' && <Banknote className="w-8 h-8 text-slate-600 drop-shadow-md" />}
+                                  {target.type === 'coffee' && <Coffee className="w-8 h-8 text-slate-800 drop-shadow-md" />}
+                              </div>
+                          ))}
+
+                          <div className="relative w-24 h-24 sm:w-32 sm:h-32 flex items-center justify-center mb-8 pointer-events-none z-10">
+                              <div className="absolute inset-0 bg-slate-200 rounded-full animate-ping opacity-20"></div>
+                              <div className="absolute inset-2 bg-slate-100 rounded-full animate-pulse"></div>
+                              
+                              <div className="relative z-10 text-black">
+                                  {loadingProgress < 30 && <FileSearch className="w-10 h-10 sm:w-12 sm:h-12 animate-bounce" />}
+                                  {loadingProgress >= 30 && loadingProgress < 60 && <Cpu className="w-10 h-10 sm:w-12 sm:h-12 animate-spin-slow" />}
+                                  {loadingProgress >= 60 && <PenLine className="w-10 h-10 sm:w-12 sm:h-12 animate-pulse" />}
+                              </div>
+                              
+                              <svg className="absolute inset-0 w-full h-full -rotate-90" viewBox="0 0 100 100">
+                                  <circle cx="50" cy="50" r="45" fill="none" stroke="#e2e8f0" strokeWidth="4" />
+                                  <circle 
+                                      cx="50" cy="50" r="45" fill="none" stroke={themeColor} strokeWidth="4" 
+                                      strokeDasharray="283" 
+                                      strokeDashoffset={283 - (283 * loadingProgress / 100)} 
+                                      strokeLinecap="round"
+                                      className="transition-all duration-300 ease-out"
+                                  />
+                              </svg>
                           </div>
+
+                          <h3 className="text-lg sm:text-xl font-bold text-slate-800 mb-2 animate-pulse text-center pointer-events-none z-10 px-4">{loadingText}</h3>
                           
-                          <svg className="absolute inset-0 w-full h-full -rotate-90" viewBox="0 0 100 100">
-                              <circle cx="50" cy="50" r="45" fill="none" stroke="#e2e8f0" strokeWidth="4" />
-                              <circle 
-                                  cx="50" cy="50" r="45" fill="none" stroke={themeColor} strokeWidth="4" 
-                                  strokeDasharray="283" 
-                                  strokeDashoffset={283 - (283 * loadingProgress / 100)} 
-                                  strokeLinecap="round"
-                                  className="transition-all duration-300 ease-out"
-                              />
-                          </svg>
-                      </div>
+                          <div className="w-48 sm:w-64 h-2 bg-slate-200 rounded-full overflow-hidden mt-4 pointer-events-none z-10">
+                              <div 
+                                  className="h-full rounded-full transition-all duration-300 ease-out relative overflow-hidden" 
+                                  style={{ width: `${loadingProgress}%`, backgroundColor: themeColor }}
+                              >
+                                  <div className="absolute inset-0 bg-white/30 skew-x-12 animate-[shimmer_1.5s_infinite]"></div>
+                              </div>
+                          </div>
+                          <p className="text-xs font-bold text-slate-400 mt-2 pointer-events-none z-10">%{Math.round(loadingProgress)}</p>
 
-                      <h3 className="text-lg sm:text-xl font-bold text-slate-800 mb-2 animate-pulse text-center pointer-events-none z-10 px-4">{loadingText}</h3>
-                      
-                      <div className="w-48 sm:w-64 h-2 bg-slate-200 rounded-full overflow-hidden mt-4 pointer-events-none z-10">
-                          <div 
-                              className="h-full rounded-full transition-all duration-300 ease-out relative overflow-hidden" 
-                              style={{ width: `${loadingProgress}%`, backgroundColor: themeColor }}
-                          >
-                              <div className="absolute inset-0 bg-white/30 skew-x-12 animate-[shimmer_1.5s_infinite]"></div>
+                          {/* OYUN SKOR TABLOSU */}
+                          <div className="mt-8 flex flex-col items-center animate-in slide-in-from-bottom-4 duration-700 pointer-events-none z-10">
+                              <p className="text-xs font-bold text-slate-400 uppercase tracking-widest mb-1 flex items-center gap-1">
+                                  <MousePointer2 className="w-3 h-3" /> Kariyer Avcısı
+                              </p>
+                              <div className="bg-white px-6 py-2 rounded-full shadow-sm border border-slate-200 flex items-center gap-2">
+                                  <Trophy className="w-4 h-4 text-slate-500" />
+                                  <span className="font-black text-slate-700 text-lg">{gameScore}</span>
+                              </div>
+                              <p className="text-[10px] text-slate-400 mt-2">Beklerken ikonları yakala!</p>
                           </div>
                       </div>
-                      <p className="text-xs font-bold text-slate-400 mt-2 pointer-events-none z-10">%{Math.round(loadingProgress)}</p>
-
-                      {/* OYUN SKOR TABLOSU */}
-                      <div className="mt-8 flex flex-col items-center animate-in slide-in-from-bottom-4 duration-700 pointer-events-none z-10">
-                          <p className="text-xs font-bold text-slate-400 uppercase tracking-widest mb-1 flex items-center gap-1">
-                              <MousePointer2 className="w-3 h-3" /> Kariyer Avcısı
-                          </p>
-                          <div className="bg-white px-6 py-2 rounded-full shadow-sm border border-slate-200 flex items-center gap-2">
-                              <Trophy className="w-4 h-4 text-slate-500" />
-                              <span className="font-black text-slate-700 text-lg">{gameScore}</span>
-                          </div>
-                          <p className="text-[10px] text-slate-400 mt-2">Beklerken ikonları yakala!</p>
-                      </div>
-                  </div>
-                ) : optimizedData ? (
-                  <div className={`animate-in fade-in duration-700 ${activeTemplate !== 'classic' ? 'grid grid-cols-2 gap-x-6 gap-y-0' : ''}`}>
-                      {/* --- KONFETİ EFEKTİ --- */}
-                      {showConfetti && confettiParticles.map(p => <ConfettiParticle key={p.id} style={p.style} />)}
-                      
-                      {/* HEADER */}
-                    <div className={`${activeTemplate !== 'classic' ? 'col-span-2' : ''} flex ${getHeaderStyle()} mb-3`}>
-                      <div className={`${activeTemplate === 'classic' || activeTemplate === 'elegant' || activeTemplate === 'bold' ? 'text-center w-full' : 'flex-1 pr-6'}`}>
-                        <h1 
-                          className={`text-4xl font-bold uppercase tracking-tight mb-2 ${editableClass} ${(activeTemplate === 'classic' || activeTemplate === 'bold') ? 'text-slate-900' : ''}`} 
-                          style={{ color: (activeTemplate === 'classic' || activeTemplate === 'bold') ? '#000' : themeColor }}
-                          contentEditable suppressContentEditableWarning 
-                          onBlur={(e) => updateField('name', e.target.innerText)}
-                        >
-                          {optimizedData.name || "İsim Giriniz"}
-                        </h1>
-                        <h2 
-                          className={`text-xl font-bold text-slate-800 mb-2 ${editableClass} ${(activeTemplate === 'classic' || activeTemplate === 'bold') ? 'text-slate-600 font-medium' : ''}`} 
-                          contentEditable 
-                          suppressContentEditableWarning 
-                          onBlur={(e) => updateField('title', e.target.innerText)}
-                        >
-                          {optimizedData.title}
-                        </h2>
-                        
-                        <div className={`flex flex-wrap ${(activeTemplate === 'classic' || activeTemplate === 'elegant' || activeTemplate === 'bold') ? 'justify-center gap-2 text-[11px]' : 'items-center gap-x-2 gap-y-0.5 text-[10px]'} text-slate-500 font-medium mt-1`}>
-                          <div className="flex items-center gap-1 group">
-                            {showIcons && <MapPin className="w-2.5 h-2.5 opacity-60" />}
-                            <span className={editableClass} contentEditable suppressContentEditableWarning onBlur={(e) => updateField('location', e.target.innerText)}>{optimizedData.location || translations[cvLanguage].location}</span>
-                          </div>
-                          <span className="text-slate-300">•</span>
-                          <div className="flex items-center gap-1">
-                            {showIcons && <Phone className="w-2.5 h-2.5 opacity-60" />}
-                            <span className={editableClass} contentEditable suppressContentEditableWarning onBlur={(e) => updateField('phone', e.target.innerText)}>{optimizedData.phone || translations[cvLanguage].phone}</span>
-                          </div>
-                          <span className="text-slate-300">•</span>
-                          <div className="flex items-center gap-1 group">
-                            {showIcons && <Mail className="w-2.5 h-2.5 opacity-60" />}
-                            <a 
-                              ref={emailRef} 
-                              href={`mailto:${optimizedData.email}`} 
-                              className={`pdf-link ${editableClass} hover:text-slate-600`}
-                              data-url={`mailto:${optimizedData.email}`}
+                    ) : (
+                      <div className={`animate-in fade-in duration-700 ${activeTemplate !== 'classic' ? 'grid grid-cols-2 gap-x-6 gap-y-0' : ''}`}>
+                          {/* --- KONFETİ EFEKTİ --- */}
+                          {showConfetti && confettiParticles.map(p => <ConfettiParticle key={p.id} style={p.style} />)}
+                          
+                          {/* HEADER */}
+                        <div className={`${activeTemplate !== 'classic' ? 'col-span-2' : ''} flex ${getHeaderStyle()} mb-3`}>
+                          <div className={`${activeTemplate === 'classic' || activeTemplate === 'elegant' || activeTemplate === 'bold' ? 'text-center w-full' : 'flex-1 pr-6'}`}>
+                            <h1 
+                              className={`text-4xl font-bold uppercase tracking-tight mb-2 ${editableClass} ${(activeTemplate === 'classic' || activeTemplate === 'bold') ? 'text-slate-900' : ''}`} 
+                              style={{ color: (activeTemplate === 'classic' || activeTemplate === 'bold') ? '#000' : themeColor }}
                               contentEditable suppressContentEditableWarning 
-                              onBlur={(e) => updateField('email', e.target.innerText)}
+                              onBlur={(e) => updateField('name', e.target.innerText)}
                             >
-                              {optimizedData.email || translations[cvLanguage].email}
-                            </a>
-                            <a 
-                               href={`mailto:${optimizedData.email}`} 
-                               className="opacity-0 group-hover:opacity-100 transition-opacity ml-1 p-0.5 text-slate-400 hover:text-slate-600"
-                               title="E-posta Gönder"
-                            >
-                               <ExternalLink className="w-2.5 h-2.5" />
-                            </a>
-                          </div>
-                          <span className="text-slate-300">•</span>
-                          {/* LinkedIn Bölümü */}
-                          <div className="flex items-center gap-1 group relative">
-                            {showIcons && (
-                              <a 
-                                 href={formatLinkedinUrl(optimizedData.linkedin)} 
-                                 target="_blank" 
-                                 rel="noopener noreferrer" 
-                                 className="cursor-pointer hover:opacity-80 transition-opacity pdf-link"
-                                 data-url={formatLinkedinUrl(optimizedData.linkedin)}
-                                 title="Profili Görüntüle"
-                               >
-                                 <Linkedin className="w-2.5 h-2.5 opacity-80" style={{ color: themeColor }} />
-                               </a>
-                            )}
-                            <span 
-                              ref={linkedinRef} 
-                              className={`${editableClass} font-semibold pdf-link`} 
-                              style={{ color: themeColor, textDecoration: 'none' }} 
-                              data-url={formatLinkedinUrl(optimizedData.linkedin)}
+                              {optimizedData.name || "İsim Giriniz"}
+                            </h1>
+                            <h2 
+                              className={`text-xl font-bold text-slate-800 mb-2 ${editableClass} ${(activeTemplate === 'classic' || activeTemplate === 'bold') ? 'text-slate-600 font-medium' : ''}`} 
                               contentEditable 
                               suppressContentEditableWarning 
-                              onBlur={(e) => updateField('linkedin', e.target.innerText)}
-                              title="Düzenlemek için tıklayın"
+                              onBlur={(e) => updateField('title', e.target.innerText)}
                             >
-                              {decodeURIComponent(optimizedData.linkedin || translations[cvLanguage].profil).replace(/^https?:\/\/(www\.)?/, '')}
-                            </span>
+                              {optimizedData.title}
+                            </h2>
                             
-                            <a 
-                               href={formatLinkedinUrl(optimizedData.linkedin)} 
-                               target="_blank" 
-                               rel="noopener noreferrer" 
-                               className="opacity-0 group-hover:opacity-100 transition-opacity ml-1 p-0.5 text-slate-400 hover:text-slate-600 cursor-pointer"
-                               title="Bağlantıyı Aç"
-                            >
-                               <ExternalLink className="w-2.5 h-2.5" />
-                            </a>
-                          </div>
-
-                          {/* --- ÖZEL LINK BÖLÜMÜ (GITHUB VB.) --- */}
-                          {optimizedData.customLinks?.map((linkObj, idx) => (
-                             <React.Fragment key={linkObj.id || idx}>
-                                <span className="text-slate-300">•</span>
-                                <div className="flex items-center gap-1 group/clink relative">
-                                   {showIcons && (
-                                      <a 
-                                         href={formatUrl(linkObj.url)} 
-                                         target="_blank" 
-                                         rel="noopener noreferrer" 
-                                         className="cursor-pointer hover:opacity-80 transition-opacity pdf-link"
-                                         data-url={formatUrl(linkObj.url)}
-                                         title={linkObj.label}
-                                       >
-                                         <LinkIcon className="w-2.5 h-2.5 opacity-80" style={{ color: themeColor }} />
-                                       </a>
-                                   )}
-                                   <span 
-                                      className={`${editableClass} font-semibold pdf-link`} 
-                                      style={{ color: themeColor, textDecoration: 'none' }} 
-                                      data-url={formatUrl(linkObj.url)}
-                                      contentEditable 
-                                      suppressContentEditableWarning 
-                                      onBlur={(e) => {
-                                          const text = e.target.innerText;
-                                          let newLabel = linkObj.label;
-                                          let newUrl = linkObj.url;
-                                          if(text.includes(': ')) {
-                                              newLabel = text.split(': ')[0];
-                                              newUrl = text.split(': ')[1];
-                                          } else {
-                                              newUrl = text;
-                                          }
-                                          setOptimizedData(prev => {
-                                              const newArr = [...(prev.customLinks || [])];
-                                              newArr[idx] = { ...newArr[idx], label: newLabel, url: newUrl };
-                                              return { ...prev, customLinks: newArr };
-                                          });
-                                      }}
-                                      title={`${linkObj.label} - Düzenlemek için tıklayın`}
+                            <div className={`flex flex-wrap ${(activeTemplate === 'classic' || activeTemplate === 'elegant' || activeTemplate === 'bold') ? 'justify-center gap-2 text-[11px]' : 'items-center gap-x-2 gap-y-0.5 text-[10px]'} text-slate-500 font-medium mt-1`}>
+                              <div className="flex items-center gap-1 group">
+                                {showIcons && <MapPin className="w-2.5 h-2.5 opacity-60" />}
+                                <span className={editableClass} contentEditable suppressContentEditableWarning onBlur={(e) => updateField('location', e.target.innerText)}>{optimizedData.location || translations[cvLanguage].location}</span>
+                              </div>
+                              <span className="text-slate-300">•</span>
+                              <div className="flex items-center gap-1">
+                                {showIcons && <Phone className="w-2.5 h-2.5 opacity-60" />}
+                                <span className={editableClass} contentEditable suppressContentEditableWarning onBlur={(e) => updateField('phone', e.target.innerText)}>{optimizedData.phone || translations[cvLanguage].phone}</span>
+                              </div>
+                              <span className="text-slate-300">•</span>
+                              <div className="flex items-center gap-1 group">
+                                {showIcons && <Mail className="w-2.5 h-2.5 opacity-60" />}
+                                <a 
+                                  ref={emailRef} 
+                                  href={`mailto:${optimizedData.email}`} 
+                                  className={`pdf-link ${editableClass} hover:text-slate-600`}
+                                  data-url={`mailto:${optimizedData.email}`}
+                                  contentEditable suppressContentEditableWarning 
+                                  onBlur={(e) => updateField('email', e.target.innerText)}
+                                >
+                                  {optimizedData.email || translations[cvLanguage].email}
+                                </a>
+                                <a 
+                                   href={`mailto:${optimizedData.email}`} 
+                                   className="opacity-0 group-hover:opacity-100 transition-opacity ml-1 p-0.5 text-slate-400 hover:text-slate-600"
+                                   title="E-posta Gönder"
+                                >
+                                   <ExternalLink className="w-2.5 h-2.5" />
+                                </a>
+                              </div>
+                              <span className="text-slate-300">•</span>
+                              {/* LinkedIn Bölümü */}
+                              <div className="flex items-center gap-1 group relative">
+                                {showIcons && (
+                                  <a 
+                                     href={formatLinkedinUrl(optimizedData.linkedin)} 
+                                     target="_blank" 
+                                     rel="noopener noreferrer" 
+                                     className="cursor-pointer hover:opacity-80 transition-opacity pdf-link"
+                                     data-url={formatLinkedinUrl(optimizedData.linkedin)}
+                                     title="Profili Görüntüle"
                                    >
-                                      {linkObj.label}: {linkObj.url.replace(/^https?:\/\/(www\.)?/, '')}
-                                   </span>
-                                   
-                                   <a 
-                                      href={formatUrl(linkObj.url)} 
-                                      target="_blank" 
-                                      rel="noopener noreferrer" 
-                                      className="opacity-0 group-hover/clink:opacity-100 transition-opacity ml-1 p-0.5 text-slate-400 hover:text-slate-600 cursor-pointer"
-                                      title="Bağlantıyı Aç"
-                                   >
-                                      <ExternalLink className="w-2.5 h-2.5" />
+                                     <Linkedin className="w-2.5 h-2.5 opacity-80" style={{ color: themeColor }} />
                                    </a>
+                                )}
+                                <span 
+                                  ref={linkedinRef} 
+                                  className={`${editableClass} font-semibold pdf-link`} 
+                                  style={{ color: themeColor, textDecoration: 'none' }} 
+                                  data-url={formatLinkedinUrl(optimizedData.linkedin)}
+                                  contentEditable 
+                                  suppressContentEditableWarning 
+                                  onBlur={(e) => updateField('linkedin', e.target.innerText)}
+                                  title="Düzenlemek için tıklayın"
+                                >
+                                  {decodeURIComponent(optimizedData.linkedin || translations[cvLanguage].profil).replace(/^https?:\/\/(www\.)?/, '')}
+                                </span>
+                                
+                                <a 
+                                   href={formatLinkedinUrl(optimizedData.linkedin)} 
+                                   target="_blank" 
+                                   rel="noopener noreferrer" 
+                                   className="opacity-0 group-hover:opacity-100 transition-opacity ml-1 p-0.5 text-slate-400 hover:text-slate-600 cursor-pointer"
+                                   title="Bağlantıyı Aç"
+                                >
+                                   <ExternalLink className="w-2.5 h-2.5" />
+                                </a>
+                              </div>
 
-                                   <button 
-                                      onClick={() => {
-                                          setOptimizedData(prev => {
-                                              const newArr = [...(prev.customLinks || [])];
-                                              newArr.splice(idx, 1);
-                                              return { ...prev, customLinks: newArr };
-                                          });
-                                      }}
-                                      className="absolute -right-5 top-0 opacity-0 group-hover/clink:opacity-100 text-slate-400 hover:text-red-500 transition-opacity"
-                                      title="Sil"
-                                   >
-                                       <Trash2 className="w-3 h-3" />
-                                   </button>
-                                </div>
-                             </React.Fragment>
-                          ))}
+                              {/* --- ÖZEL LINK BÖLÜMÜ (GITHUB VB.) --- */}
+                              {optimizedData.customLinks?.map((linkObj, idx) => (
+                                 <React.Fragment key={linkObj.id || idx}>
+                                    <span className="text-slate-300">•</span>
+                                    <div className="flex items-center gap-1 group/clink relative">
+                                       {showIcons && (
+                                          <a 
+                                             href={formatUrl(linkObj.url)} 
+                                             target="_blank" 
+                                             rel="noopener noreferrer" 
+                                             className="cursor-pointer hover:opacity-80 transition-opacity pdf-link"
+                                             data-url={formatUrl(linkObj.url)}
+                                             title={linkObj.label}
+                                           >
+                                             <LinkIcon className="w-2.5 h-2.5 opacity-80" style={{ color: themeColor }} />
+                                           </a>
+                                       )}
+                                       <span 
+                                          className={`${editableClass} font-semibold pdf-link`} 
+                                          style={{ color: themeColor, textDecoration: 'none' }} 
+                                          data-url={formatUrl(linkObj.url)}
+                                          contentEditable 
+                                          suppressContentEditableWarning 
+                                          onBlur={(e) => {
+                                              const text = e.target.innerText;
+                                              let newLabel = linkObj.label;
+                                              let newUrl = linkObj.url;
+                                              if(text.includes(': ')) {
+                                                  newLabel = text.split(': ')[0];
+                                                  newUrl = text.split(': ')[1];
+                                              } else {
+                                                  newUrl = text;
+                                              }
+                                              setOptimizedData(prev => {
+                                                  const newArr = [...(prev.customLinks || [])];
+                                                  newArr[idx] = { ...newArr[idx], label: newLabel, url: newUrl };
+                                                  return { ...prev, customLinks: newArr };
+                                              });
+                                          }}
+                                          title={`${linkObj.label} - Düzenlemek için tıklayın`}
+                                       >
+                                          {linkObj.label}: {linkObj.url.replace(/^https?:\/\/(www\.)?/, '')}
+                                       </span>
+                                       
+                                       <a 
+                                          href={formatUrl(linkObj.url)} 
+                                          target="_blank" 
+                                          rel="noopener noreferrer" 
+                                          className="opacity-0 group-hover/clink:opacity-100 transition-opacity ml-1 p-0.5 text-slate-400 hover:text-slate-600 cursor-pointer"
+                                          title="Bağlantıyı Aç"
+                                       >
+                                          <ExternalLink className="w-2.5 h-2.5" />
+                                       </a>
 
-                        </div>
-                      </div>
-                      
-                      {/* Fotoğraf */}
-                      {activeTemplate !== 'classic' && activeTemplate !== 'elegant' && activeTemplate !== 'bold' && (
-                        <div 
-                          className={`w-24 h-24 lg:w-32 lg:h-32 bg-slate-50 ${photoShape} border border-slate-200 flex items-center justify-center overflow-hidden flex-shrink-0 relative group select-none ${profileImage ? 'cursor-move' : ''}`}
-                          onMouseDown={handlePhotoMouseDown} onMouseMove={handlePhotoMouseMove} onMouseUp={handlePhotoMouseUp} onMouseLeave={handlePhotoMouseUp} onWheel={handlePhotoWheel}
-                        >
-                          {profileImage ? (
-                            <div className="w-full h-full relative flex items-center justify-center pointer-events-none">
-                              <img 
-                                src={profileImage} alt="Profil" 
-                                className="max-w-full max-h-full transition-transform duration-75" 
-                                style={{ 
-                                  imageRendering: 'high-quality',
-                                  objectFit: 'contain',
-                                  transform: `translate(${photoPos.x}px, ${photoPos.y}px) scale(${photoZoom})`,
-                                }} 
-                              />
+                                       <button 
+                                          onClick={() => {
+                                              setOptimizedData(prev => {
+                                                  const newArr = [...(prev.customLinks || [])];
+                                                  newArr.splice(idx, 1);
+                                                  return { ...prev, customLinks: newArr };
+                                              });
+                                          }}
+                                          className="absolute -right-5 top-0 opacity-0 group-hover/clink:opacity-100 text-slate-400 hover:text-red-500 transition-opacity"
+                                          title="Sil"
+                                       >
+                                           <Trash2 className="w-3 h-3" />
+                                       </button>
+                                    </div>
+                                 </React.Fragment>
+                              ))}
+
                             </div>
-                          ) : (
-                            <User className="w-12 h-12 lg:w-16 lg:h-16 text-slate-300" />
+                          </div>
+                          
+                          {/* Fotoğraf */}
+                          {activeTemplate !== 'classic' && activeTemplate !== 'elegant' && activeTemplate !== 'bold' && (
+                            <div 
+                              className={`w-24 h-24 lg:w-32 lg:h-32 bg-slate-50 ${photoShape} border border-slate-200 flex items-center justify-center overflow-hidden flex-shrink-0 relative group select-none ${profileImage ? 'cursor-move' : ''}`}
+                              onMouseDown={handlePhotoMouseDown} onMouseMove={handlePhotoMouseMove} onMouseUp={handlePhotoMouseUp} onMouseLeave={handlePhotoMouseUp} onWheel={handlePhotoWheel}
+                            >
+                              {profileImage ? (
+                                <div className="w-full h-full relative flex items-center justify-center pointer-events-none">
+                                  <img 
+                                    src={profileImage} alt="Profil" 
+                                    className="max-w-full max-h-full transition-transform duration-75" 
+                                    style={{ 
+                                      imageRendering: 'high-quality',
+                                      objectFit: 'contain',
+                                      transform: `translate(${photoPos.x}px, ${photoPos.y}px) scale(${photoZoom})`,
+                                    }} 
+                                  />
+                                </div>
+                              ) : (
+                                <User className="w-12 h-12 lg:w-16 lg:h-16 text-slate-300" />
+                              )}
+                            </div>
                           )}
                         </div>
-                      )}
-                    </div>
 
-                    {/* Sıralanabilir Bölümler */}
-                    {sectionsOrder.map((sectionId, index) => {
-                      const isLast = index === sectionsOrder.length - 1;
-                      let colSpan = 'col-span-2';
-                      const shortSections = ['skills', 'additional', ...sectionsOrder.filter(s => s.startsWith('custom_'))];
-                      
-                      if (activeTemplate === 'modern' && shortSections.includes(sectionId)) {
-                        const prev = sectionsOrder[index - 1];
-                        const next = sectionsOrder[index + 1];
-                        const isNeighborRelated = (shortSections.includes(prev) || shortSections.includes(next));
-                        if (isNeighborRelated) colSpan = 'col-span-2 lg:col-span-1';
-                      }
+                        {/* Sıralanabilir Bölümler */}
+                        {sectionsOrder.map((sectionId, index) => {
+                          const isLast = index === sectionsOrder.length - 1;
+                          let colSpan = 'col-span-2';
+                          const shortSections = ['skills', 'additional', ...sectionsOrder.filter(s => s.startsWith('custom_'))];
+                          
+                          if (activeTemplate === 'modern' && shortSections.includes(sectionId)) {
+                            const prev = sectionsOrder[index - 1];
+                            const next = sectionsOrder[index + 1];
+                            const isNeighborRelated = (shortSections.includes(prev) || shortSections.includes(next));
+                            if (isNeighborRelated) colSpan = 'col-span-2 lg:col-span-1';
+                          }
 
-                      if (sectionId.startsWith('custom_') && optimizedData[sectionId] && typeof optimizedData[sectionId][0] === 'object') {
-                            colSpan = 'col-span-2';
-                      }
+                          if (sectionId.startsWith('custom_') && optimizedData[sectionId] && typeof optimizedData[sectionId][0] === 'object') {
+                                colSpan = 'col-span-2';
+                          }
 
-                      return (
-                        <div 
-                          key={sectionId}
-                          style={{ pageBreakInside: 'avoid' }}
-                          className={`${colSpan} ${getSectionContainerStyle(isLast)} cursor-move relative group rounded-lg transition-all duration-300 ease-in-out border border-transparent hover:border-slate-100/50 hover:bg-slate-50/30 -mx-2 px-2 py-2 page-break-avoid`}
-                          draggable
-                          onDragStart={(e) => { dragItem.current = index; e.target.style.opacity = '0.5'; e.dataTransfer.effectAllowed = 'move'; }}
-                          onDragEnter={(e) => { dragOverItem.current = index; if (dragItem.current !== null && dragItem.current !== index) handleSort(); }}
-                          onDragEnd={(e) => { e.target.style.opacity = '1'; dragItem.current = null; dragOverItem.current = null; }}
-                          onDragOver={(e) => e.preventDefault()}
-                        >
-                            <div className="absolute -left-5 top-2 opacity-0 group-hover:opacity-100 transition-opacity cursor-move p-1 text-slate-300 hover:text-slate-500"><Move className="w-4 h-4" /></div>
+                          return (
+                            <div 
+                              key={sectionId}
+                              style={{ pageBreakInside: 'avoid' }}
+                              className={`${colSpan} ${getSectionContainerStyle(isLast)} cursor-move relative group rounded-lg transition-all duration-300 ease-in-out border border-transparent hover:border-slate-100/50 hover:bg-slate-50/30 -mx-2 px-2 py-2 page-break-avoid`}
+                              draggable
+                              onDragStart={(e) => { dragItem.current = index; e.target.style.opacity = '0.5'; e.dataTransfer.effectAllowed = 'move'; }}
+                              onDragEnter={(e) => { dragOverItem.current = index; if (dragItem.current !== null && dragItem.current !== index) handleSort(); }}
+                              onDragEnd={(e) => { e.target.style.opacity = '1'; dragItem.current = null; dragOverItem.current = null; }}
+                              onDragOver={(e) => e.preventDefault()}
+                            >
+                                <div className="absolute -left-5 top-2 opacity-0 group-hover:opacity-100 transition-opacity cursor-move p-1 text-slate-300 hover:text-slate-500"><Move className="w-4 h-4" /></div>
 
-                            {/* --- BÖLÜM BAŞLIĞI VE SİLME BUTONU --- */}
-                            <div className="relative group/header flex items-center">
-                                <h3 
-                                  className={`${getSectionTitleStyle()} ${editableClass} flex-grow`} 
-                                  style={{ color: (activeTemplate === 'classic' || activeTemplate === 'bold') ? '#333' : themeColor, borderColor: (activeTemplate === 'classic' || activeTemplate === 'bold') ? '#333' : (activeTemplate === 'elegant' ? '#e2e8f0' : themeColor) }}
-                                  contentEditable 
-                                  suppressContentEditableWarning
-                                  onBlur={(e) => setCustomHeadings(prev => ({ ...prev, [sectionId]: e.target.innerText }))}
-                                >
-                                  {customHeadings[sectionId] || (sectionId.startsWith('custom_') ? 'YENİ BÖLÜM' : toUpper(translations[cvLanguage][sectionId]))}
-                                </h3>
-                                
-                                <button 
-                                  onClick={() => handleRemoveMainSection(sectionId)}
-                                  className="absolute right-0 top-0 opacity-0 group-hover/header:opacity-100 transition-opacity p-1 text-slate-300 hover:text-red-500 hover:bg-red-50 rounded"
-                                  title="Bu bölümü sil"
-                                >
-                                  <Trash2 className="w-4 h-4" />
-                                </button>
-                            </div>
+                                {/* --- BÖLÜM BAŞLIĞI VE SİLME BUTONU --- */}
+                                <div className="relative group/header flex items-center">
+                                    <h3 
+                                      className={`${getSectionTitleStyle()} ${editableClass} flex-grow`} 
+                                      style={{ color: (activeTemplate === 'classic' || activeTemplate === 'bold') ? '#333' : themeColor, borderColor: (activeTemplate === 'classic' || activeTemplate === 'bold') ? '#333' : (activeTemplate === 'elegant' ? '#e2e8f0' : themeColor) }}
+                                      contentEditable 
+                                      suppressContentEditableWarning
+                                      onBlur={(e) => setCustomHeadings(prev => ({ ...prev, [sectionId]: e.target.innerText }))}
+                                    >
+                                      {customHeadings[sectionId] || (sectionId.startsWith('custom_') ? 'YENİ BÖLÜM' : toUpper(translations[cvLanguage][sectionId]))}
+                                    </h3>
+                                    
+                                    <button 
+                                      onClick={() => handleRemoveMainSection(sectionId)}
+                                      className="absolute right-0 top-0 opacity-0 group-hover/header:opacity-100 transition-opacity p-1 text-slate-300 hover:text-red-500 hover:bg-red-50 rounded"
+                                      title="Bu bölümü sil"
+                                    >
+                                      <Trash2 className="w-4 h-4" />
+                                    </button>
+                                </div>
 
-                            <div className={activeTemplate === 'professional' ? 'flex-1' : ''}>
-                              {sectionId === 'summary' && (
-                                 <p key={`summary-${showHighlights ? 'hl' : 'no'}`} className={`text-[12px] leading-tight text-slate-700 ${editableClass} ${textAlign}`} contentEditable suppressContentEditableWarning onBlur={(e) => updateField('summary', e.target.innerText)}>
-                                  {highlightKeywords(getActiveSummary())}
-                                 </p>
-                              )}
+                                <div className={activeTemplate === 'professional' ? 'flex-1' : ''}>
+                                  {sectionId === 'summary' && (
+                                     <p key={`summary-${showHighlights ? 'hl' : 'no'}`} className={`text-[12px] leading-tight text-slate-700 ${editableClass} ${textAlign}`} contentEditable suppressContentEditableWarning onBlur={(e) => updateField('summary', e.target.innerText)}>
+                                      {highlightKeywords(getActiveSummary())}
+                                     </p>
+                                  )}
 
-                              {/* --- İŞ DENEYİMİ VE DETAYLI CUSTOM BÖLÜMLER --- */}
-                              {(sectionId === 'experience' || (sectionId.startsWith('custom_') && optimizedData[sectionId] && typeof optimizedData[sectionId][0] === 'object')) && optimizedData[sectionId]?.map((exp, idx) => (
-                                 <div key={`${exp.id || idx}-${showHighlights ? 'hl' : 'no'}`} className="mb-1.5 last:mb-0 relative group/item transition-all duration-500 ease-in-out" draggable onDragStart={(e) => onSubDragStart(e, sectionId, idx)} onDragOver={(e) => onSubDragOver(e, sectionId, idx)} onDragEnd={onSubDragEnd}>
-                                   <div className="absolute -left-4 top-1 opacity-0 group-hover/item:opacity-100 transition-opacity cursor-move p-1 text-slate-300 hover:text-black"><Move className="w-3 h-3" /></div>
-                                   <button onClick={() => removeSectionItem(sectionId, idx)} className="absolute -left-9 top-1 p-1 text-slate-300 hover:text-red-500 opacity-0 group-hover/item:opacity-100 transition-opacity" title="Bu kaydı sil"><Trash2 className="w-3 h-3" /></button>
-                                   
-                                   <div className="flex justify-between items-baseline mb-0.5">
-                                     <h4 className="font-bold text-[14px] text-slate-900 leading-snug">
-                                       <span className={editableClass} contentEditable suppressContentEditableWarning onBlur={(e) => updateArrayField(sectionId, idx, 'role', e.target.innerText)}>{highlightKeywords(exp.role)}</span>
-                                       {activeTemplate !== 'professional' && <span className={`font-medium text-slate-600 ${editableClass}`} contentEditable suppressContentEditableWarning onBlur={(e) => updateArrayField(sectionId, idx, 'company', e.target.innerText)}>, {exp.company}</span>}
-                                     </h4>
-                                     <div className="flex items-center gap-1 ml-auto flex-shrink-0 relative group/date">
-                                        <span 
-                                            className={`${editableClass} text-[12px] font-bold italic whitespace-nowrap ${!exp.date ? 'text-slate-300 print:hidden' : 'text-slate-500'}`} 
-                                            contentEditable 
-                                            suppressContentEditableWarning 
-                                            onBlur={(e) => updateArrayField(sectionId, idx, 'date', e.target.innerText)}
-                                        >
-                                            {exp.date || "Tarih Ekle"}
-                                        </span>
-                                        {exp.date && (
-                                            <button 
-                                                onClick={() => updateArrayField(sectionId, idx, 'date', '')} 
-                                                className="opacity-0 group-hover/date:opacity-100 text-slate-400 hover:text-red-600 transition-opacity absolute -right-4 top-0 p-0.5"
-                                                title="Tarihi Sil"
+                                  {/* --- İŞ DENEYİMİ VE DETAYLI CUSTOM BÖLÜMLER --- */}
+                                  {(sectionId === 'experience' || (sectionId.startsWith('custom_') && optimizedData[sectionId] && typeof optimizedData[sectionId][0] === 'object')) && optimizedData[sectionId]?.map((exp, idx) => (
+                                     <div key={`${exp.id || idx}-${showHighlights ? 'hl' : 'no'}`} className="mb-1.5 last:mb-0 relative group/item transition-all duration-500 ease-in-out" draggable onDragStart={(e) => onSubDragStart(e, sectionId, idx)} onDragOver={(e) => onSubDragOver(e, sectionId, idx)} onDragEnd={onSubDragEnd}>
+                                       <div className="absolute -left-4 top-1 opacity-0 group-hover/item:opacity-100 transition-opacity cursor-move p-1 text-slate-300 hover:text-black"><Move className="w-3 h-3" /></div>
+                                       <button onClick={() => removeSectionItem(sectionId, idx)} className="absolute -left-9 top-1 p-1 text-slate-300 hover:text-red-500 opacity-0 group-hover/item:opacity-100 transition-opacity" title="Bu kaydı sil"><Trash2 className="w-3 h-3" /></button>
+                                       
+                                       <div className="flex justify-between items-baseline mb-0.5">
+                                         <h4 className="font-bold text-[14px] text-slate-900 leading-snug">
+                                           <span className={editableClass} contentEditable suppressContentEditableWarning onBlur={(e) => updateArrayField(sectionId, idx, 'role', e.target.innerText)}>{highlightKeywords(exp.role)}</span>
+                                           {activeTemplate !== 'professional' && <span className={`font-medium text-slate-600 ${editableClass}`} contentEditable suppressContentEditableWarning onBlur={(e) => updateArrayField(sectionId, idx, 'company', e.target.innerText)}>, {exp.company}</span>}
+                                         </h4>
+                                         <div className="flex items-center gap-1 ml-auto flex-shrink-0 relative group/date">
+                                            <span 
+                                                className={`${editableClass} text-[12px] font-bold italic whitespace-nowrap ${!exp.date ? 'text-slate-300 print:hidden' : 'text-slate-500'}`} 
+                                                contentEditable 
+                                                suppressContentEditableWarning 
+                                                onBlur={(e) => updateArrayField(sectionId, idx, 'date', e.target.innerText)}
                                             >
-                                                <Trash2 className="w-3 h-3"/>
-                                            </button>
-                                        )}
+                                                {exp.date || "Tarih Ekle"}
+                                            </span>
+                                            {exp.date && (
+                                                <button 
+                                                    onClick={() => updateArrayField(sectionId, idx, 'date', '')} 
+                                                    className="opacity-0 group-hover/date:opacity-100 text-slate-400 hover:text-red-600 transition-opacity absolute -right-4 top-0 p-0.5"
+                                                    title="Tarihi Sil"
+                                                >
+                                                    <Trash2 className="w-3 h-3"/>
+                                                </button>
+                                            )}
+                                         </div>
+                                       </div>
+                                       {activeTemplate === 'professional' && <p className={`text-[13px] font-semibold text-slate-600 mb-1 ${editableClass}`} contentEditable suppressContentEditableWarning onBlur={(e) => updateArrayField(sectionId, idx, 'company', e.target.innerText)}>{exp.company}</p>}
+                                       <ul className={`list-disc ml-4 space-y-0.5 ${textAlign}`}>
+                                         {getActiveBullets(exp)?.map((b, bIdx) => (
+                                          <li key={bIdx} className={`text-[12px] text-slate-700 ${editableClass} relative group/subitem pr-6`} contentEditable suppressContentEditableWarning onBlur={(e) => updateBulletPoint(sectionId, idx, bIdx, e.target.innerText)}>
+                                                  {highlightKeywords(b)}
+                                                  <button onClick={() => removeBulletPoint(sectionId, idx, bIdx)} className="absolute right-0 top-0 opacity-0 group-hover/subitem:opacity-100 text-slate-300 hover:text-red-500 transition-opacity"><Trash2 className="w-3 h-3" /></button>
+                                          </li>
+                                         ))}
+                                       </ul>
                                      </div>
-                                   </div>
-                                   {activeTemplate === 'professional' && <p className={`text-[13px] font-semibold text-slate-600 mb-1 ${editableClass}`} contentEditable suppressContentEditableWarning onBlur={(e) => updateArrayField(sectionId, idx, 'company', e.target.innerText)}>{exp.company}</p>}
-                                   <ul className={`list-disc ml-4 space-y-0.5 ${textAlign}`}>
-                                     {getActiveBullets(exp)?.map((b, bIdx) => (
-                                      <li key={bIdx} className={`text-[12px] text-slate-700 ${editableClass} relative group/subitem pr-6`} contentEditable suppressContentEditableWarning onBlur={(e) => updateBulletPoint(sectionId, idx, bIdx, e.target.innerText)}>
-                                              {highlightKeywords(b)}
-                                              <button onClick={() => removeBulletPoint(sectionId, idx, bIdx)} className="absolute right-0 top-0 opacity-0 group-hover/subitem:opacity-100 text-slate-300 hover:text-red-500 transition-opacity"><Trash2 className="w-3 h-3" /></button>
-                                      </li>
-                                     ))}
-                                   </ul>
-                                 </div>
-                              ))}
+                                  ))}
 
-                              {sectionId === 'education' && optimizedData.education?.map((edu, idx) => (
-                                 <div key={`${edu.id || idx}-${showHighlights ? 'hl' : 'no'}`} className="mb-1 last:mb-0 relative group/item transition-all duration-500 ease-in-out" draggable onDragStart={(e) => onSubDragStart(e, 'education', idx)} onDragOver={(e) => onSubDragOver(e, 'education', idx)} onDragEnd={onSubDragEnd}>
-                                   <div className="absolute -left-4 top-1 opacity-0 group-hover/item:opacity-100 transition-opacity cursor-move p-1 text-slate-300 hover:text-black"><Move className="w-3 h-3" /></div>
-                                   <button onClick={() => removeSectionItem('education', idx)} className="absolute -left-9 top-1 p-1 text-slate-300 hover:text-red-500 opacity-0 group-hover/item:opacity-100 transition-opacity" title="Bu kaydı sil"><Trash2 className="w-3 h-3" /></button>
-                                   
-                                   <div className="flex justify-between items-baseline">
-                                     <div className={`flex-1 leading-tight text-[14px] ${editableClass}`}>
-                                        <span className="font-bold text-slate-900" contentEditable suppressContentEditableWarning onBlur={(e) => updateArrayField('education', idx, 'degree', e.target.innerText)}>{edu.degree}</span>
-                                        <span className="mx-1.5 text-slate-300">|</span>
-                                        <span className="font-medium text-slate-600" contentEditable suppressContentEditableWarning onBlur={(e) => updateArrayField('education', idx, 'school', e.target.innerText)}>{edu.school}</span>
-                                     </div>
-                                     <div className="flex items-center gap-1 ml-2 flex-shrink-0 relative group/date">
-                                        <span 
-                                            className={`${editableClass} text-[12px] font-bold italic whitespace-nowrap ${!edu.date ? 'text-slate-300 print:hidden' : 'text-slate-500'}`} 
-                                            contentEditable 
-                                            suppressContentEditableWarning 
-                                            onBlur={(e) => updateArrayField('education', idx, 'date', e.target.innerText)}
-                                        >
-                                            {edu.date || "Tarih Ekle"}
-                                        </span>
-                                        {edu.date && (
-                                            <button 
-                                                onClick={() => updateArrayField('education', idx, 'date', '')} 
-                                                className="opacity-0 group-hover/date:opacity-100 text-slate-400 hover:text-red-600 transition-opacity absolute -right-4 top-0 p-0.5"
-                                                title="Tarihi Sil"
+                                  {sectionId === 'education' && optimizedData.education?.map((edu, idx) => (
+                                     <div key={`${edu.id || idx}-${showHighlights ? 'hl' : 'no'}`} className="mb-1 last:mb-0 relative group/item transition-all duration-500 ease-in-out" draggable onDragStart={(e) => onSubDragStart(e, 'education', idx)} onDragOver={(e) => onSubDragOver(e, 'education', idx)} onDragEnd={onSubDragEnd}>
+                                       <div className="absolute -left-4 top-1 opacity-0 group-hover/item:opacity-100 transition-opacity cursor-move p-1 text-slate-300 hover:text-black"><Move className="w-3 h-3" /></div>
+                                       <button onClick={() => removeSectionItem('education', idx)} className="absolute -left-9 top-1 p-1 text-slate-300 hover:text-red-500 opacity-0 group-hover/item:opacity-100 transition-opacity" title="Bu kaydı sil"><Trash2 className="w-3 h-3" /></button>
+                                       
+                                       <div className="flex justify-between items-baseline">
+                                         <div className={`flex-1 leading-tight text-[14px] ${editableClass}`}>
+                                            <span className="font-bold text-slate-900" contentEditable suppressContentEditableWarning onBlur={(e) => updateArrayField('education', idx, 'degree', e.target.innerText)}>{edu.degree}</span>
+                                            <span className="mx-1.5 text-slate-300">|</span>
+                                            <span className="font-medium text-slate-600" contentEditable suppressContentEditableWarning onBlur={(e) => updateArrayField('education', idx, 'school', e.target.innerText)}>{edu.school}</span>
+                                         </div>
+                                         <div className="flex items-center gap-1 ml-2 flex-shrink-0 relative group/date">
+                                            <span 
+                                                className={`${editableClass} text-[12px] font-bold italic whitespace-nowrap ${!edu.date ? 'text-slate-300 print:hidden' : 'text-slate-500'}`} 
+                                                contentEditable 
+                                                suppressContentEditableWarning 
+                                                onBlur={(e) => updateArrayField('education', idx, 'date', e.target.innerText)}
                                             >
-                                                <Trash2 className="w-3 h-3"/>
-                                            </button>
-                                        )}
+                                                {edu.date || "Tarih Ekle"}
+                                            </span>
+                                            {edu.date && (
+                                                <button 
+                                                    onClick={() => updateArrayField('education', idx, 'date', '')} 
+                                                    className="opacity-0 group-hover/date:opacity-100 text-slate-400 hover:text-red-600 transition-opacity absolute -right-4 top-0 p-0.5"
+                                                    title="Tarihi Sil"
+                                                >
+                                                    <Trash2 className="w-3 h-3"/>
+                                                </button>
+                                            )}
+                                         </div>
+                                       </div>
+                                       {edu.details && (
+                                          <div className="relative group/desc mt-0.5 pr-6">
+                                                  <p className={`text-[11px] text-slate-500 leading-snug ${editableClass} ${textAlign}`} contentEditable suppressContentEditableWarning onBlur={(e) => updateArrayField('education', idx, 'details', e.target.innerText)}>
+                                                      {highlightKeywords(edu.details)}
+                                                  </p>
+                                                  <button 
+                                                      onClick={() => updateArrayField('education', idx, 'details', '')}
+                                                      className="absolute right-0 top-0 opacity-0 group-hover/desc:opacity-100 text-slate-300 hover:text-red-500 transition-opacity"
+                                                      title="Açıklamayı Sil"
+                                                  >
+                                                      <Trash2 className="w-3 h-3" />
+                                                  </button>
+                                          </div>
+                                       )}
                                      </div>
-                                   </div>
-                                   {edu.details && (
-                                      <div className="relative group/desc mt-0.5 pr-6">
-                                              <p className={`text-[11px] text-slate-500 leading-snug ${editableClass} ${textAlign}`} contentEditable suppressContentEditableWarning onBlur={(e) => updateArrayField('education', idx, 'details', e.target.innerText)}>
-                                                  {highlightKeywords(edu.details)}
-                                              </p>
-                                              <button 
-                                                  onClick={() => updateArrayField('education', idx, 'details', '')}
-                                                  className="absolute right-0 top-0 opacity-0 group-hover/desc:opacity-100 text-slate-300 hover:text-red-500 transition-opacity"
-                                                  title="Açıklamayı Sil"
-                                              >
-                                                  <Trash2 className="w-3 h-3" />
-                                              </button>
-                                      </div>
-                                   )}
-                                 </div>
-                              ))}
+                                  ))}
 
-                              {sectionId === 'skills' && optimizedData.skills?.length > 0 && (
-                                 <div key={`skills-${showHighlights ? 'hl' : 'no'}`} className="grid grid-cols-4 gap-x-2 gap-y-0.5">
-                                   {optimizedData.skills.map((s, i) => (
-                                     <div key={i} className={`text-[12px] text-slate-700 flex items-center gap-1 ${editableClass} relative group/item cursor-move leading-normal pr-4`} contentEditable suppressContentEditableWarning onBlur={(e) => updateSimpleList('skills', i, e.target.innerText)} draggable onDragStart={(e) => onSubDragStart(e, 'skills', i)} onDragOver={(e) => onSubDragOver(e, 'skills', i)} onDragEnd={onSubDragEnd}>
-                                       <div className="absolute -left-3 opacity-0 group-hover/item:opacity-100 transition-opacity p-0.5 text-slate-300 hover:text-black"><Move className="w-2.5 h-2.5" /></div>
-                                       <button onClick={() => removeSectionItem('skills', i)} className="absolute right-0 top-1/2 -translate-y-1/2 opacity-0 group-hover/item:opacity-100 text-slate-300 hover:text-red-500 transition-opacity"><Trash2 className="w-3 h-3" /></button>
-                                       <span className="w-1 h-1 rounded-full shrink-0" style={{ backgroundColor: themeColor }}></span> 
-                                       <span className="break-words">{highlightKeywords(s)}</span>
+                                  {sectionId === 'skills' && optimizedData.skills?.length > 0 && (
+                                     <div key={`skills-${showHighlights ? 'hl' : 'no'}`} className="grid grid-cols-4 gap-x-2 gap-y-0.5">
+                                       {optimizedData.skills.map((s, i) => (
+                                         <div key={i} className={`text-[12px] text-slate-700 flex items-center gap-1 ${editableClass} relative group/item cursor-move leading-normal pr-4`} contentEditable suppressContentEditableWarning onBlur={(e) => updateSimpleList('skills', i, e.target.innerText)} draggable onDragStart={(e) => onSubDragStart(e, 'skills', i)} onDragOver={(e) => onSubDragOver(e, 'skills', i)} onDragEnd={onSubDragEnd}>
+                                           <div className="absolute -left-3 opacity-0 group-hover/item:opacity-100 transition-opacity p-0.5 text-slate-300 hover:text-black"><Move className="w-2.5 h-2.5" /></div>
+                                           <button onClick={() => removeSectionItem('skills', i)} className="absolute right-0 top-1/2 -translate-y-1/2 opacity-0 group-hover/item:opacity-100 text-slate-300 hover:text-red-500 transition-opacity"><Trash2 className="w-3 h-3" /></button>
+                                           <span className="w-1 h-1 rounded-full shrink-0" style={{ backgroundColor: themeColor }}></span> 
+                                           <span className="break-words">{highlightKeywords(s)}</span>
+                                         </div>
+                                       ))}
                                      </div>
-                                   ))}
-                                 </div>
-                              )}
+                                  )}
 
-                              {/* --- GENEL "EK BİLGİLER" VEYA "BASİT (SIMPLE) CUSTOM" BÖLÜMLER --- */}
-                              {(sectionId === 'additional' || (sectionId.startsWith('custom_') && optimizedData[sectionId] && typeof optimizedData[sectionId][0] !== 'object')) && optimizedData[sectionId]?.length > 0 && (
-                                 <div key={`cust-${sectionId}-${showHighlights ? 'hl' : 'no'}`} className="grid grid-cols-3 gap-x-4 gap-y-1">
-                                   {optimizedData[sectionId].map((a, i) => (
-                                     <div key={i} className={`text-[12px] text-slate-700 ${editableClass} relative group/item cursor-move flex items-center gap-1 leading-normal pr-6`} contentEditable suppressContentEditableWarning onBlur={(e) => updateSimpleList(sectionId, i, e.target.innerText)} draggable onDragStart={(e) => onSubDragStart(e, sectionId, i)} onDragOver={(e) => onSubDragOver(e, sectionId, i)} onDragEnd={onSubDragEnd}>
-                                       <div className="absolute -left-4 top-0.5 opacity-0 group-hover/item:opacity-100 transition-opacity p-0.5 text-slate-300 hover:text-black"><Move className="w-3 h-3" /></div>
-                                       <button onClick={() => removeSectionItem(sectionId, i)} className="absolute right-0 top-1/2 -translate-y-1/2 opacity-0 group-hover/item:opacity-100 text-slate-300 hover:text-red-500 transition-opacity"><Trash2 className="w-3 h-3" /></button>
-                                       <span className="mr-1">•</span> <span className="break-words">{highlightKeywords(a)}</span>
+                                  {/* --- GENEL "EK BİLGİLER" VEYA "BASİT (SIMPLE) CUSTOM" BÖLÜMLER --- */}
+                                  {(sectionId === 'additional' || (sectionId.startsWith('custom_') && optimizedData[sectionId] && typeof optimizedData[sectionId][0] !== 'object')) && optimizedData[sectionId]?.length > 0 && (
+                                     <div key={`cust-${sectionId}-${showHighlights ? 'hl' : 'no'}`} className="grid grid-cols-3 gap-x-4 gap-y-1">
+                                       {optimizedData[sectionId].map((a, i) => (
+                                         <div key={i} className={`text-[12px] text-slate-700 ${editableClass} relative group/item cursor-move flex items-center gap-1 leading-normal pr-6`} contentEditable suppressContentEditableWarning onBlur={(e) => updateSimpleList(sectionId, i, e.target.innerText)} draggable onDragStart={(e) => onSubDragStart(e, sectionId, i)} onDragOver={(e) => onSubDragOver(e, sectionId, i)} onDragEnd={onSubDragEnd}>
+                                           <div className="absolute -left-4 top-0.5 opacity-0 group-hover/item:opacity-100 transition-opacity p-0.5 text-slate-300 hover:text-black"><Move className="w-3 h-3" /></div>
+                                           <button onClick={() => removeSectionItem(sectionId, i)} className="absolute right-0 top-1/2 -translate-y-1/2 opacity-0 group-hover/item:opacity-100 text-slate-300 hover:text-red-500 transition-opacity"><Trash2 className="w-3 h-3" /></button>
+                                           <span className="mr-1">•</span> <span className="break-words">{highlightKeywords(a)}</span>
+                                         </div>
+                                       ))}
                                      </div>
-                                   ))}
-                                 </div>
-                              )}
-                            </div>
-                         </div>
-                      );
-                    })}
+                                  )}
+                                </div>
+                             </div>
+                          );
+                        })}
 
+                      </div>
+                    )}
                   </div>
-                ) : (
-                  <div className="h-full flex flex-col items-center justify-center space-y-4 opacity-30 relative select-none">
-                    <FileText className="w-16 h-16 lg:w-20 lg:h-20" style={{ color: themeColor }} />
-                    <p className="text-[13px] lg:text-[15px] font-bold tracking-widest uppercase text-center px-8 text-slate-900">Verileri doldurun ve bir dil seçerek tasarlayın</p>
-                  </div>
-                )}
-              </div>
+                </div>
+              )}
             </div>
           </div>
-        </div>
+        </div> {/* <--- İŞTE UNUTULAN </div> BURADA :) */}
+
+        {/* --- UNDO NOTIFICATION (TOAST) --- */}
+        {lastDeletedSection && (
+          <div className="fixed bottom-4 sm:bottom-8 left-1/2 -translate-x-1/2 bg-slate-900 text-white px-4 sm:px-6 py-2 sm:py-3 rounded-full shadow-2xl flex items-center gap-3 sm:gap-4 z-[70] animate-in slide-in-from-bottom-4 duration-300 border border-slate-700 w-[90%] sm:w-auto justify-between sm:justify-center">
+             <span className="text-xs sm:text-sm font-medium">Bölüm silindi</span>
+             <div className="h-4 w-px bg-slate-700"></div>
+             <button onClick={handleUndoDelete} className="text-xs sm:text-sm font-bold text-slate-400 hover:text-white flex items-center gap-1 transition-colors">
+                <Undo2 className="w-4 h-4" /> GERİ AL
+             </button>
+             <button onClick={() => setLastDeletedSection(null)} className="ml-0 sm:ml-2 text-slate-500 hover:text-white transition-colors">
+                <XCircle className="w-5 h-5" />
+             </button>
+          </div>
+        )}
+
+        {/* --- PREMIUM DARK MODE MÜLAKAT SİMÜLASYONU MODAL --- */}
+        {interviewOpen && (
+          <div className="fixed inset-0 z-[100] flex items-center justify-center p-2 sm:p-4 bg-black/90 backdrop-blur-md animate-in fade-in duration-300">
+              <div className="w-full max-w-2xl bg-[#0a0a0a] rounded-xl sm:rounded-2xl shadow-2xl border border-zinc-800 overflow-hidden flex flex-col h-[90vh] sm:h-auto sm:max-h-[85vh]">
+                  
+                  {/* Modal Header */}
+                  <div className="p-3 sm:p-4 border-b border-[#222] flex justify-between items-center bg-[#111] shrink-0">
+                      <div className="flex items-center gap-3">
+                          <div className="w-8 h-8 sm:w-10 sm:h-10 rounded-full bg-[#0a0a0a] flex items-center justify-center border border-zinc-800 shadow-sm">
+                              <Bot className="w-5 h-5 sm:w-6 sm:h-6 text-zinc-300" />
+                          </div>
+                          <div>
+                              <h3 className="font-bold text-white text-base sm:text-lg">
+                                  {interviewType === 'hr' ? 'HR Interviewer' : (interviewType === 'tech' ? 'Tech Lead' : 'AI Interviewer')}
+                              </h3>
+                              <p className="text-[10px] sm:text-xs text-zinc-500 font-medium tracking-wide">
+                                  {!interviewType ? 'SEÇİM BEKLENİYOR' : (interviewType === 'hr' ? 'GENEL / İK MÜLAKATI' : 'TEKNİK MÜLAKAT')}
+                                  {interviewType && !isInterviewFinished && ` • Soru ${questionCount}/10`}
+                                  {isInterviewFinished && ` • Tamamlandı`}
+                              </p>
+                          </div>
+                      </div>
+                      <button onClick={() => setInterviewOpen(false)} className="p-2 hover:bg-zinc-800 rounded-lg text-zinc-400 hover:text-white transition-colors">
+                          <X className="w-5 h-5" />
+                      </button>
+                  </div>
+
+                  {/* --- SEÇİM VEYA SOHBET EKRANI --- */}
+                  {!interviewType ? (
+                      /* Seçim Ekranı */
+                      <div className="flex-1 flex flex-col items-center justify-center p-6 space-y-6 sm:py-20 bg-[#0a0a0a]">
+                          <div className="w-16 h-16 bg-[#111] rounded-full flex items-center justify-center mb-2 border border-zinc-800 shadow-sm">
+                              <Bot className="w-8 h-8 text-white" />
+                          </div>
+                          <h3 className="text-xl sm:text-2xl font-bold text-white text-center mb-4">Mülakat Türünü Seçin</h3>
+                          
+                          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 w-full max-w-md">
+                              <button 
+                                  onClick={() => startInterviewSession('hr')} 
+                                  className="flex flex-col items-center justify-center p-6 bg-[#111] hover:bg-[#1a1a1a] border border-[#222] hover:border-zinc-500 rounded-2xl transition-all gap-3 group active:scale-95"
+                              >
+                                  <Users className="w-8 h-8 text-blue-400 opacity-80 group-hover:opacity-100 group-hover:scale-110 transition-all duration-300" />
+                                  <div className="text-center">
+                                      <div className="font-bold text-white">Genel / İK Mülakatı</div>
+                                      <div className="text-[11px] text-zinc-500 mt-1 leading-tight">Kültür uyumu, iletişim ve<br/>davranışsal yetkinlikler</div>
+                                  </div>
+                              </button>
+                              
+                              <button 
+                                  onClick={() => startInterviewSession('tech')} 
+                                  className="flex flex-col items-center justify-center p-6 bg-[#111] hover:bg-[#1a1a1a] border border-[#222] hover:border-zinc-500 rounded-2xl transition-all gap-3 group active:scale-95"
+                              >
+                                  <Terminal className="w-8 h-8 text-emerald-400 opacity-80 group-hover:opacity-100 group-hover:scale-110 transition-all duration-300" />
+                                  <div className="text-center">
+                                      <div className="font-bold text-white">Teknik Mülakat</div>
+                                      <div className="text-[11px] text-zinc-500 mt-1 leading-tight">Takım Lideri ile teknik beceri<br/>ve problem çözme senaryoları</div>
+                                  </div>
+                              </button>
+                          </div>
+                      </div>
+                  ) : (
+                      /* Sohbet Ekranı */
+                      <>
+                          <div className="flex-1 overflow-y-auto p-4 sm:p-6 space-y-4 sm:space-y-6 scrollbar-thin scrollbar-thumb-zinc-700 scrollbar-track-transparent bg-[#0a0a0a]" ref={interviewScrollRef}>
+                              {interviewMessages.map((msg, idx) => (
+                                  <div key={idx} className={`flex gap-3 sm:gap-4 ${msg.sender === 'user' ? 'justify-end' : 'justify-start'}`}>
+                                      {msg.sender === 'ai' && (
+                                          <div className="w-6 h-6 sm:w-8 sm:h-8 rounded-full bg-[#0a0a0a] flex-shrink-0 flex items-center justify-center border border-zinc-800 mt-1">
+                                              <Bot className="w-3 h-3 sm:w-4 sm:h-4 text-zinc-300" />
+                                          </div>
+                                      )}
+                                      <div className={`max-w-[85%] sm:max-w-[80%] p-3 sm:p-4 text-[14px] sm:text-[15px] leading-relaxed shadow-sm ${
+                                          msg.sender === 'user' 
+                                              ? 'bg-white text-black rounded-2xl rounded-tr-sm font-medium' 
+                                              : 'bg-[#111] text-zinc-200 border border-zinc-800 rounded-2xl rounded-tl-sm'
+                                      }`}>
+                                          {msg.isSystem ? (
+                                              <span className="flex items-center gap-2 italic text-zinc-500">
+                                                  <Loader2 className="w-3 h-3 animate-spin" /> {msg.text}
+                                              </span>
+                                          ) : (
+                                              <span className={msg.text.includes("Mülakat sonlandırıldı") || msg.text.includes("kabul edilemez") ? "text-red-400 font-semibold" : ""}>
+                                                  {msg.text}
+                                              </span>
+                                          )}
+                                      </div>
+                                      {msg.sender === 'user' && (
+                                          <div className="w-6 h-6 sm:w-8 sm:h-8 rounded-full bg-zinc-200 flex-shrink-0 flex items-center justify-center mt-1 border border-zinc-300">
+                                              <User className="w-3 h-3 sm:w-4 sm:h-4 text-black" />
+                                          </div>
+                                      )}
+                                  </div>
+                              ))}
+                              
+                              {/* Yapay Zeka Yazıyor Animasyonu */}
+                              {interviewLoading && (
+                                  <div className="flex gap-3 sm:gap-4">
+                                       <div className="w-6 h-6 sm:w-8 sm:h-8 rounded-full bg-[#0a0a0a] flex-shrink-0 flex items-center justify-center border border-zinc-800 mt-1">
+                                          <Bot className="w-3 h-3 sm:w-4 sm:h-4 text-zinc-300" />
+                                      </div>
+                                      <div className="bg-[#111] p-3 sm:p-4 rounded-2xl rounded-tl-sm border border-zinc-800 flex items-center gap-1.5">
+                                          <div className="w-1.5 h-1.5 bg-zinc-500 rounded-full animate-bounce" style={{ animationDelay: '0s' }}></div>
+                                          <div className="w-1.5 h-1.5 bg-zinc-500 rounded-full animate-bounce" style={{ animationDelay: '0.15s' }}></div>
+                                          <div className="w-1.5 h-1.5 bg-zinc-500 rounded-full animate-bounce" style={{ animationDelay: '0.3s' }}></div>
+                                      </div>
+                                  </div>
+                              )}
+
+                              {/* Rapor Hazırlanıyor Animasyonu */}
+                              {isGeneratingReport && (
+                                  <div className="flex flex-col items-center justify-center p-8 space-y-4 animate-in fade-in duration-500">
+                                     <RefreshCw className="w-8 h-8 text-zinc-500 animate-spin" />
+                                     <p className="text-zinc-400 text-sm font-medium tracking-wide">Yapay Zeka Mülakat Analizini Hazırlıyor...</p>
+                                  </div>
+                              )}
+
+                              {/* --- MÜLAKAT ANALİZ RAPORU KARTI --- */}
+                              {interviewReport && (
+                                  <div className="mt-8 mb-4 bg-[#111] border border-zinc-800 rounded-2xl p-5 sm:p-6 shadow-2xl relative overflow-hidden animate-in slide-in-from-bottom-4 duration-700">
+                                      <div className="absolute top-0 right-0 w-32 h-32 bg-white/5 rounded-full blur-3xl -mr-10 -mt-10 pointer-events-none"></div>
+
+                                      <div className="flex items-center justify-between mb-6 relative z-10 border-b border-zinc-800 pb-4">
+                                          <h4 className="text-white font-bold text-base sm:text-lg flex items-center gap-2">
+                                              <Trophy className="w-5 h-5 text-yellow-500" />
+                                              Mülakat Analiz Raporu
+                                          </h4>
+                                          <div className="text-right">
+                                              <div className="text-[10px] text-zinc-500 font-bold tracking-wider mb-1">BAŞARI ORANI</div>
+                                              <div className={`text-3xl font-black ${interviewReport.score >= 70 ? 'text-emerald-400' : (interviewReport.score >= 40 ? 'text-amber-400' : 'text-rose-400')}`}>
+                                                  %{interviewReport.score}
+                                              </div>
+                                          </div>
+                                      </div>
+
+                                      <div className="space-y-4 relative z-10">
+                                          {/* Güçlü Yönler */}
+                                          {interviewReport.strengths && interviewReport.strengths.length > 0 && (
+                                              <div className="bg-[#1a1a1a] rounded-xl p-4 border border-zinc-800/50">
+                                                  <h5 className="text-emerald-400 font-bold text-sm flex items-center gap-2 mb-3">
+                                                      <ThumbsUp className="w-4 h-4" /> Başarılı Olduğun Noktalar
+                                                  </h5>
+                                                  <ul className="space-y-2">
+                                                      {interviewReport.strengths.map((s, i) => (
+                                                          <li key={i} className="text-zinc-300 text-[13px] flex items-start gap-2 leading-relaxed">
+                                                              <span className="w-1.5 h-1.5 rounded-full bg-emerald-500/50 mt-1.5 shrink-0"></span>
+                                                              {s}
+                                                          </li>
+                                                      ))}
+                                                  </ul>
+                                              </div>
+                                          )}
+
+                                          {/* Gelişim Alanları */}
+                                          {interviewReport.weaknesses && interviewReport.weaknesses.length > 0 && (
+                                              <div className="bg-[#1a1a1a] rounded-xl p-4 border border-zinc-800/50">
+                                                  <h5 className="text-rose-400 font-bold text-sm flex items-center gap-2 mb-3">
+                                                      <ThumbsDown className="w-4 h-4" /> Gelişime Açık Yönler
+                                                  </h5>
+                                                  <ul className="space-y-2">
+                                                      {interviewReport.weaknesses.map((w, i) => (
+                                                          <li key={i} className="text-zinc-300 text-[13px] flex items-start gap-2 leading-relaxed">
+                                                              <span className="w-1.5 h-1.5 rounded-full bg-rose-500/50 mt-1.5 shrink-0"></span>
+                                                              {w}
+                                                          </li>
+                                                      ))}
+                                                  </ul>
+                                              </div>
+                                          )}
+
+                                          {/* Öneriler */}
+                                          {interviewReport.suggestions && interviewReport.suggestions.length > 0 && (
+                                              <div className="bg-blue-900/10 rounded-xl p-4 border border-blue-900/20">
+                                                  <h5 className="text-blue-400 font-bold text-sm flex items-center gap-2 mb-3">
+                                                      <Lightbulb className="w-4 h-4" /> Daha İyi Olabilirdi: Tavsiyeler
+                                                  </h5>
+                                                  <ul className="space-y-2">
+                                                      {interviewReport.suggestions.map((s, i) => (
+                                                          <li key={i} className="text-blue-100/70 text-[13px] flex items-start gap-2 leading-relaxed">
+                                                              <span className="w-1.5 h-1.5 rounded-full bg-blue-500/50 mt-1.5 shrink-0"></span>
+                                                              {s}
+                                                          </li>
+                                                      ))}
+                                                  </ul>
+                                              </div>
+                                          )}
+                                      </div>
+                                  </div>
+                              )}
+
+                              {/* Kapandıktan sonra uyarı ikonu (Sadece rapor yoksa göster) */}
+                              {isInterviewFinished && !interviewReport && !isGeneratingReport && interviewMessages.length > 0 && interviewMessages[interviewMessages.length-1].sender === 'ai' && interviewMessages[interviewMessages.length-1].text.includes("sonlandır") && (
+                                  <div className="flex justify-center mt-6 animate-in zoom-in duration-300">
+                                      <div className="bg-red-500/10 text-red-400 border border-red-500/20 px-4 py-2 rounded-full text-xs font-bold flex items-center gap-2">
+                                          <AlertOctagon className="w-4 h-4" /> MÜLAKAT İPTAL EDİLDİ
+                                      </div>
+                                  </div>
+                              )}
+                          </div>
+
+                          {/* Input Area */}
+                          <div className="p-3 sm:p-4 bg-[#111] border-t border-[#222] shrink-0">
+                              <div className="relative flex items-center gap-2">
+                                  <input 
+                                      type="text" 
+                                      value={userInterviewInput}
+                                      onChange={(e) => setUserInterviewInput(e.target.value)}
+                                      onKeyDown={handleInterviewKeyPress}
+                                      placeholder={isInterviewFinished ? "Mülakat tamamlandı. Analiz raporunuzu inceleyebilirsiniz." : "Cevabınızı buraya yazın..."}
+                                      className={`w-full bg-[#0a0a0a] text-white placeholder-zinc-600 border border-[#333] rounded-xl py-3 sm:py-3.5 pl-4 pr-12 focus:ring-1 focus:ring-white focus:border-white outline-none transition-all text-[14px] sm:text-[15px] ${isInterviewFinished ? 'opacity-50 cursor-not-allowed' : ''}`}
+                                      disabled={interviewLoading || isInterviewFinished}
+                                      autoFocus
+                                  />
+                                  <button 
+                                      onClick={handleSendInterviewMessage}
+                                      disabled={!userInterviewInput.trim() || interviewLoading || isInterviewFinished}
+                                      className="absolute right-2 p-2 bg-white hover:bg-zinc-200 text-black rounded-lg transition-all disabled:opacity-30 disabled:bg-transparent disabled:text-zinc-600 shadow-sm"
+                                  >
+                                      <Send className="w-4 h-4" />
+                                  </button>
+                              </div>
+                              <p className="text-center text-[10px] sm:text-[11px] text-zinc-600 mt-2 sm:mt-3 font-medium hidden sm:block">
+                                  Resumatch AI Interviewer - Powered by Gemini
+                              </p>
+                          </div>
+                      </>
+                  )}
+              </div>
+          </div>
+        )}
+
       </div>
-
-      {/* --- UNDO NOTIFICATION (TOAST) --- */}
-      {lastDeletedSection && (
-        <div className="fixed bottom-4 sm:bottom-8 left-1/2 -translate-x-1/2 bg-slate-900 text-white px-4 sm:px-6 py-2 sm:py-3 rounded-full shadow-2xl flex items-center gap-3 sm:gap-4 z-[70] animate-in slide-in-from-bottom-4 duration-300 border border-slate-700 w-[90%] sm:w-auto justify-between sm:justify-center">
-           <span className="text-xs sm:text-sm font-medium">Bölüm silindi</span>
-           <div className="h-4 w-px bg-slate-700"></div>
-           <button onClick={handleUndoDelete} className="text-xs sm:text-sm font-bold text-slate-400 hover:text-white flex items-center gap-1 transition-colors">
-              <Undo2 className="w-4 h-4" /> GERİ AL
-           </button>
-           <button onClick={() => setLastDeletedSection(null)} className="ml-0 sm:ml-2 text-slate-500 hover:text-white transition-colors">
-              <XCircle className="w-5 h-5" />
-           </button>
-        </div>
-      )}
-
-      {/* --- PREMIUM DARK MODE MÜLAKAT SİMÜLASYONU MODAL --- */}
-      {interviewOpen && (
-        <div className="fixed inset-0 z-[100] flex items-center justify-center p-2 sm:p-4 bg-black/90 backdrop-blur-md animate-in fade-in duration-300">
-            <div className="w-full max-w-2xl bg-[#0a0a0a] rounded-xl sm:rounded-2xl shadow-2xl border border-zinc-800 overflow-hidden flex flex-col h-[90vh] sm:h-auto sm:max-h-[85vh]">
-                
-                {/* Modal Header */}
-                <div className="p-3 sm:p-4 border-b border-[#222] flex justify-between items-center bg-[#111] shrink-0">
-                    <div className="flex items-center gap-3">
-                        <div className="w-8 h-8 sm:w-10 sm:h-10 rounded-full bg-[#0a0a0a] flex items-center justify-center border border-zinc-800 shadow-sm">
-                            <Bot className="w-5 h-5 sm:w-6 sm:h-6 text-zinc-300" />
-                        </div>
-                        <div>
-                            <h3 className="font-bold text-white text-base sm:text-lg">
-                                {interviewType === 'hr' ? 'HR Interviewer' : (interviewType === 'tech' ? 'Tech Lead' : 'AI Interviewer')}
-                            </h3>
-                            <p className="text-[10px] sm:text-xs text-zinc-500 font-medium tracking-wide">
-                                {!interviewType ? 'SEÇİM BEKLENİYOR' : (interviewType === 'hr' ? 'GENEL / İK MÜLAKATI' : 'TEKNİK MÜLAKAT')}
-                                {interviewType && !isInterviewFinished && ` • Soru ${questionCount}/10`}
-                                {isInterviewFinished && ` • Tamamlandı`}
-                            </p>
-                        </div>
-                    </div>
-                    <button onClick={() => setInterviewOpen(false)} className="p-2 hover:bg-zinc-800 rounded-lg text-zinc-400 hover:text-white transition-colors">
-                        <X className="w-5 h-5" />
-                    </button>
-                </div>
-
-                {/* --- SEÇİM VEYA SOHBET EKRANI --- */}
-                {!interviewType ? (
-                    /* Seçim Ekranı */
-                    <div className="flex-1 flex flex-col items-center justify-center p-6 space-y-6 sm:py-20 bg-[#0a0a0a]">
-                        <div className="w-16 h-16 bg-[#111] rounded-full flex items-center justify-center mb-2 border border-zinc-800 shadow-sm">
-                            <Bot className="w-8 h-8 text-white" />
-                        </div>
-                        <h3 className="text-xl sm:text-2xl font-bold text-white text-center mb-4">Mülakat Türünü Seçin</h3>
-                        
-                        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 w-full max-w-md">
-                            <button 
-                                onClick={() => startInterviewSession('hr')} 
-                                className="flex flex-col items-center justify-center p-6 bg-[#111] hover:bg-[#1a1a1a] border border-[#222] hover:border-zinc-500 rounded-2xl transition-all gap-3 group active:scale-95"
-                            >
-                                <Users className="w-8 h-8 text-blue-400 opacity-80 group-hover:opacity-100 group-hover:scale-110 transition-all duration-300" />
-                                <div className="text-center">
-                                    <div className="font-bold text-white">Genel / İK Mülakatı</div>
-                                    <div className="text-[11px] text-zinc-500 mt-1 leading-tight">Kültür uyumu, iletişim ve<br/>davranışsal yetkinlikler</div>
-                                </div>
-                            </button>
-                            
-                            <button 
-                                onClick={() => startInterviewSession('tech')} 
-                                className="flex flex-col items-center justify-center p-6 bg-[#111] hover:bg-[#1a1a1a] border border-[#222] hover:border-zinc-500 rounded-2xl transition-all gap-3 group active:scale-95"
-                            >
-                                <Terminal className="w-8 h-8 text-emerald-400 opacity-80 group-hover:opacity-100 group-hover:scale-110 transition-all duration-300" />
-                                <div className="text-center">
-                                    <div className="font-bold text-white">Teknik Mülakat</div>
-                                    <div className="text-[11px] text-zinc-500 mt-1 leading-tight">Takım Lideri ile teknik beceri<br/>ve problem çözme senaryoları</div>
-                                </div>
-                            </button>
-                        </div>
-                    </div>
-                ) : (
-                    /* Sohbet Ekranı */
-                    <>
-                        <div className="flex-1 overflow-y-auto p-4 sm:p-6 space-y-4 sm:space-y-6 scrollbar-thin scrollbar-thumb-zinc-700 scrollbar-track-transparent bg-[#0a0a0a]" ref={interviewScrollRef}>
-                            {interviewMessages.map((msg, idx) => (
-                                <div key={idx} className={`flex gap-3 sm:gap-4 ${msg.sender === 'user' ? 'justify-end' : 'justify-start'}`}>
-                                    {msg.sender === 'ai' && (
-                                        <div className="w-6 h-6 sm:w-8 sm:h-8 rounded-full bg-[#0a0a0a] flex-shrink-0 flex items-center justify-center border border-zinc-800 mt-1">
-                                            <Bot className="w-3 h-3 sm:w-4 sm:h-4 text-zinc-300" />
-                                        </div>
-                                    )}
-                                    <div className={`max-w-[85%] sm:max-w-[80%] p-3 sm:p-4 text-[14px] sm:text-[15px] leading-relaxed shadow-sm ${
-                                        msg.sender === 'user' 
-                                            ? 'bg-white text-black rounded-2xl rounded-tr-sm font-medium' 
-                                            : 'bg-[#111] text-zinc-200 border border-zinc-800 rounded-2xl rounded-tl-sm'
-                                    }`}>
-                                        {msg.isSystem ? (
-                                            <span className="flex items-center gap-2 italic text-zinc-500">
-                                                <Loader2 className="w-3 h-3 animate-spin" /> {msg.text}
-                                            </span>
-                                        ) : (
-                                            <span className={msg.text.includes("Mülakat sonlandırıldı") || msg.text.includes("kabul edilemez") ? "text-red-400 font-semibold" : ""}>
-                                                {msg.text}
-                                            </span>
-                                        )}
-                                    </div>
-                                    {msg.sender === 'user' && (
-                                        <div className="w-6 h-6 sm:w-8 sm:h-8 rounded-full bg-zinc-200 flex-shrink-0 flex items-center justify-center mt-1 border border-zinc-300">
-                                            <User className="w-3 h-3 sm:w-4 sm:h-4 text-black" />
-                                        </div>
-                                    )}
-                                </div>
-                            ))}
-                            
-                            {/* Yapay Zeka Yazıyor Animasyonu */}
-                            {interviewLoading && (
-                                <div className="flex gap-3 sm:gap-4">
-                                     <div className="w-6 h-6 sm:w-8 sm:h-8 rounded-full bg-[#0a0a0a] flex-shrink-0 flex items-center justify-center border border-zinc-800 mt-1">
-                                        <Bot className="w-3 h-3 sm:w-4 sm:h-4 text-zinc-300" />
-                                    </div>
-                                    <div className="bg-[#111] p-3 sm:p-4 rounded-2xl rounded-tl-sm border border-zinc-800 flex items-center gap-1.5">
-                                        <div className="w-1.5 h-1.5 bg-zinc-500 rounded-full animate-bounce" style={{ animationDelay: '0s' }}></div>
-                                        <div className="w-1.5 h-1.5 bg-zinc-500 rounded-full animate-bounce" style={{ animationDelay: '0.15s' }}></div>
-                                        <div className="w-1.5 h-1.5 bg-zinc-500 rounded-full animate-bounce" style={{ animationDelay: '0.3s' }}></div>
-                                    </div>
-                                </div>
-                            )}
-
-                            {/* Rapor Hazırlanıyor Animasyonu */}
-                            {isGeneratingReport && (
-                                <div className="flex flex-col items-center justify-center p-8 space-y-4 animate-in fade-in duration-500">
-                                   <RefreshCw className="w-8 h-8 text-zinc-500 animate-spin" />
-                                   <p className="text-zinc-400 text-sm font-medium tracking-wide">Yapay Zeka Mülakat Analizini Hazırlıyor...</p>
-                                </div>
-                            )}
-
-                            {/* --- MÜLAKAT ANALİZ RAPORU KARTI --- */}
-                            {interviewReport && (
-                                <div className="mt-8 mb-4 bg-[#111] border border-zinc-800 rounded-2xl p-5 sm:p-6 shadow-2xl relative overflow-hidden animate-in slide-in-from-bottom-4 duration-700">
-                                    <div className="absolute top-0 right-0 w-32 h-32 bg-white/5 rounded-full blur-3xl -mr-10 -mt-10 pointer-events-none"></div>
-
-                                    <div className="flex items-center justify-between mb-6 relative z-10 border-b border-zinc-800 pb-4">
-                                        <h4 className="text-white font-bold text-base sm:text-lg flex items-center gap-2">
-                                            <Trophy className="w-5 h-5 text-yellow-500" />
-                                            Mülakat Analiz Raporu
-                                        </h4>
-                                        <div className="text-right">
-                                            <div className="text-[10px] text-zinc-500 font-bold tracking-wider mb-1">BAŞARI ORANI</div>
-                                            <div className={`text-3xl font-black ${interviewReport.score >= 70 ? 'text-emerald-400' : (interviewReport.score >= 40 ? 'text-amber-400' : 'text-rose-400')}`}>
-                                                %{interviewReport.score}
-                                            </div>
-                                        </div>
-                                    </div>
-
-                                    <div className="space-y-4 relative z-10">
-                                        {/* Güçlü Yönler */}
-                                        {interviewReport.strengths && interviewReport.strengths.length > 0 && (
-                                            <div className="bg-[#1a1a1a] rounded-xl p-4 border border-zinc-800/50">
-                                                <h5 className="text-emerald-400 font-bold text-sm flex items-center gap-2 mb-3">
-                                                    <ThumbsUp className="w-4 h-4" /> Başarılı Olduğun Noktalar
-                                                </h5>
-                                                <ul className="space-y-2">
-                                                    {interviewReport.strengths.map((s, i) => (
-                                                        <li key={i} className="text-zinc-300 text-[13px] flex items-start gap-2 leading-relaxed">
-                                                            <span className="w-1.5 h-1.5 rounded-full bg-emerald-500/50 mt-1.5 shrink-0"></span>
-                                                            {s}
-                                                        </li>
-                                                    ))}
-                                                </ul>
-                                            </div>
-                                        )}
-
-                                        {/* Gelişim Alanları */}
-                                        {interviewReport.weaknesses && interviewReport.weaknesses.length > 0 && (
-                                            <div className="bg-[#1a1a1a] rounded-xl p-4 border border-zinc-800/50">
-                                                <h5 className="text-rose-400 font-bold text-sm flex items-center gap-2 mb-3">
-                                                    <ThumbsDown className="w-4 h-4" /> Gelişime Açık Yönler
-                                                </h5>
-                                                <ul className="space-y-2">
-                                                    {interviewReport.weaknesses.map((w, i) => (
-                                                        <li key={i} className="text-zinc-300 text-[13px] flex items-start gap-2 leading-relaxed">
-                                                            <span className="w-1.5 h-1.5 rounded-full bg-rose-500/50 mt-1.5 shrink-0"></span>
-                                                            {w}
-                                                        </li>
-                                                    ))}
-                                                </ul>
-                                            </div>
-                                        )}
-
-                                        {/* Öneriler */}
-                                        {interviewReport.suggestions && interviewReport.suggestions.length > 0 && (
-                                            <div className="bg-blue-900/10 rounded-xl p-4 border border-blue-900/20">
-                                                <h5 className="text-blue-400 font-bold text-sm flex items-center gap-2 mb-3">
-                                                    <Lightbulb className="w-4 h-4" /> Daha İyi Olabilirdi: Tavsiyeler
-                                                </h5>
-                                                <ul className="space-y-2">
-                                                    {interviewReport.suggestions.map((s, i) => (
-                                                        <li key={i} className="text-blue-100/70 text-[13px] flex items-start gap-2 leading-relaxed">
-                                                            <span className="w-1.5 h-1.5 rounded-full bg-blue-500/50 mt-1.5 shrink-0"></span>
-                                                            {s}
-                                                        </li>
-                                                    ))}
-                                                </ul>
-                                            </div>
-                                        )}
-                                    </div>
-                                </div>
-                            )}
-
-                            {/* Kapandıktan sonra uyarı ikonu (Sadece rapor yoksa göster) */}
-                            {isInterviewFinished && !interviewReport && !isGeneratingReport && interviewMessages.length > 0 && interviewMessages[interviewMessages.length-1].sender === 'ai' && interviewMessages[interviewMessages.length-1].text.includes("sonlandır") && (
-                                <div className="flex justify-center mt-6 animate-in zoom-in duration-300">
-                                    <div className="bg-red-500/10 text-red-400 border border-red-500/20 px-4 py-2 rounded-full text-xs font-bold flex items-center gap-2">
-                                        <AlertOctagon className="w-4 h-4" /> MÜLAKAT İPTAL EDİLDİ
-                                    </div>
-                                </div>
-                            )}
-                        </div>
-
-                        {/* Input Area */}
-                        <div className="p-3 sm:p-4 bg-[#111] border-t border-[#222] shrink-0">
-                            <div className="relative flex items-center gap-2">
-                                <input 
-                                    type="text" 
-                                    value={userInterviewInput}
-                                    onChange={(e) => setUserInterviewInput(e.target.value)}
-                                    onKeyDown={handleInterviewKeyPress}
-                                    placeholder={isInterviewFinished ? "Mülakat tamamlandı. Analiz raporunuzu inceleyebilirsiniz." : "Cevabınızı buraya yazın..."}
-                                    className={`w-full bg-[#0a0a0a] text-white placeholder-zinc-600 border border-[#333] rounded-xl py-3 sm:py-3.5 pl-4 pr-12 focus:ring-1 focus:ring-white focus:border-white outline-none transition-all text-[14px] sm:text-[15px] ${isInterviewFinished ? 'opacity-50 cursor-not-allowed' : ''}`}
-                                    disabled={interviewLoading || isInterviewFinished}
-                                    autoFocus
-                                />
-                                <button 
-                                    onClick={handleSendInterviewMessage}
-                                    disabled={!userInterviewInput.trim() || interviewLoading || isInterviewFinished}
-                                    className="absolute right-2 p-2 bg-white hover:bg-zinc-200 text-black rounded-lg transition-all disabled:opacity-30 disabled:bg-transparent disabled:text-zinc-600 shadow-sm"
-                                >
-                                    <Send className="w-4 h-4" />
-                                </button>
-                            </div>
-                            <p className="text-center text-[10px] sm:text-[11px] text-zinc-600 mt-2 sm:mt-3 font-medium hidden sm:block">
-                                Resumatch AI Interviewer - Powered by Gemini
-                            </p>
-                        </div>
-                    </>
-                )}
-            </div>
-        </div>
-      )}
-
-    </div>
     </>
   );
 };
