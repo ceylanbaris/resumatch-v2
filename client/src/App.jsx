@@ -101,7 +101,6 @@ const App = () => {
   const previewContainerRef = useRef(null);
   const mobilePreviewRef = useRef(null);
 
-  // --- MÜLAKAT SİMÜLASYONU STATE'LERİ ---
   const [interviewOpen, setInterviewOpen] = useState(false);
   const [interviewLoading, setInterviewLoading] = useState(false);
   const [interviewMessages, setInterviewMessages] = useState([]);
@@ -110,7 +109,6 @@ const App = () => {
   const [questionCount, setQuestionCount] = useState(0); 
   const [isInterviewFinished, setIsInterviewFinished] = useState(false); 
   
-  // YENİ: Rapor State'leri
   const [interviewReport, setInterviewReport] = useState(null);
   const [isGeneratingReport, setIsGeneratingReport] = useState(false);
   
@@ -1823,33 +1821,40 @@ const App = () => {
             </div>
 
             {/* SCROLL EDİLEBİLİR CV ALANI */}
-            <div className="flex-1 overflow-y-auto overflow-x-hidden p-2 sm:p-4 pb-20 scrollbar-thin scrollbar-thumb-black scrollbar-track-transparent" ref={previewContainerRef}>
+            <div className="flex-1 overflow-y-auto overflow-x-hidden p-2 sm:p-4 pb-20 scrollbar-thin scrollbar-thumb-black scrollbar-track-transparent flex flex-col items-center" ref={previewContainerRef}>
               
-              {/* 1. DÜZELTME: Veri yoksa ince uzun A4 kağıdı gösterme, ekrana tam oturan standart boşluk göster */}
               {!isLoading && !optimizedData ? (
-                <div className="h-full min-h-[60vh] flex flex-col items-center justify-center space-y-4 opacity-40 select-none">
+                <div className="h-full min-h-[60vh] flex flex-col items-center justify-center space-y-4 opacity-40 select-none w-full">
                   <FileText className="w-16 h-16 lg:w-20 lg:h-20" style={{ color: themeColor }} />
                   <p className="text-[13px] lg:text-[15px] font-bold tracking-widest uppercase text-center px-8 text-slate-900">Verileri doldurun ve bir dil seçerek tasarlayın</p>
                 </div>
               ) : (
                 
-                /* 2. DÜZELTME: Veri varsa A4 boyutunu göster ve aşağıdaki gereksiz boşluğu yok etmek için dinamik yükseklik ver */
-                <div className="flex justify-center items-start transition-all duration-300" style={{ height: `${1123 * previewScale}px` }}> 
+                /* KAPSAYICI KUTU: A4 kağıdının boyutlarını tam tutar, ezilmeyi ve gereksiz boşluğu engeller */
+                <div 
+                  className="relative transition-all duration-300 mx-auto bg-white shadow-2xl" 
+                  style={{ 
+                     width: `${794 * previewScale}px`, 
+                     height: `${1123 * previewScale}px`,
+                     flexShrink: 0 /* Mobilde eziş büzüş olmasını engeller */
+                  }}
+                >
+                  
+                  {/* ASIL A4 KAĞIDI: Boyutları sabittir, sol üstten scale edilir */}
                   <div 
                     id="resume-preview" 
                     ref={resumeRef}
-                    className={`bg-white relative overflow-hidden select-none ${activeTemplate === 'classic' || activeTemplate === 'bold' ? 'font-serif' : 'font-sans'}`} 
+                    className={`absolute top-0 left-0 overflow-hidden select-none origin-top-left ${activeTemplate === 'classic' || activeTemplate === 'bold' ? 'font-serif' : 'font-sans'}`} 
                     style={{ 
                        width: '794px',
                        height: '1123px',
-                       boxShadow: '0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 8px 10px -6px rgba(0, 0, 0, 0.1)', 
+                       minWidth: '794px', /* SQUISH ENGELLEYİCİ */
+                       minHeight: '1123px', /* SQUISH ENGELLEYİCİ */
                        paddingTop: activeTemplate === 'professional' ? '40px' : '32px',
                        paddingRight: activeTemplate === 'professional' ? '40px' : '32px',
                        paddingLeft: activeTemplate === 'professional' ? '40px' : '32px',
                        paddingBottom: '0px',
                        transform: `scale(${previewScale})`,
-                       transformOrigin: 'top center'
-                       /* marginBottom satırını sildik çünkü yüksekliği dinamik yaptık */
                     }} 
                   >
                     
@@ -2299,7 +2304,7 @@ const App = () => {
               )}
             </div>
           </div>
-        </div> {/* <--- İŞTE UNUTULAN </div> BURADA :) */}
+        </div>
 
         {/* --- UNDO NOTIFICATION (TOAST) --- */}
         {lastDeletedSection && (
