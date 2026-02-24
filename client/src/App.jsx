@@ -78,6 +78,9 @@ const App = () => {
   const [isPdfLoading, setIsPdfLoading] = useState(false);
   const [isDownloading, setIsDownloading] = useState(false);
   const [error, setError] = useState(null);
+  const [termsAccepted, setTermsAccepted] = useState(false);
+  const [isKvkkModalOpen, setIsKvkkModalOpen] = useState(false);
+  const [isTermsModalOpen, setIsTermsModalOpen] = useState(false);
   const [copySuccess, setCopySuccess] = useState(false);
   const [themeColor, setThemeColor] = useState('#000000'); 
   const [cvLanguage, setCvLanguage] = useState('tr'); 
@@ -1713,6 +1716,35 @@ const App = () => {
                   </div>
                 </div>
 
+{/* --- KVKK ONAY KUTUSU --- */}
+                <div className="flex items-start gap-3 p-3 sm:p-4 bg-slate-100/50 border border-slate-200 rounded-xl mt-4 mb-2">
+                  <input 
+                    type="checkbox" 
+                    id="terms" 
+                    checked={termsAccepted} 
+                    onChange={(e) => setTermsAccepted(e.target.checked)} 
+                    className="mt-1 w-4 h-4 sm:w-5 sm:h-5 text-black bg-white border-slate-300 rounded focus:ring-black focus:ring-2 cursor-pointer transition-all flex-shrink-0"
+                  />
+                  <label htmlFor="terms" className="text-[11px] sm:text-xs text-slate-600 cursor-pointer select-none leading-relaxed">
+                    <button type="button" onClick={(e) => {e.preventDefault(); setIsKvkkModalOpen(true);}} className="font-bold text-black underline hover:text-slate-700 transition-colors">KVKK Aydınlatma Metni</button>'ni ve <button type="button" onClick={(e) => {e.preventDefault(); setIsTermsModalOpen(true);}} className="font-bold text-black underline hover:text-slate-700 transition-colors">Kullanım Koşulları</button>'nı okudum, kişisel verilerimin anlık olarak yapay zeka sunucularında işlenmesini onaylıyorum.
+                  </label>
+                </div>
+
+                {/* Aksiyon Butonları */}
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 sm:gap-4">
+                  <button onClick={() => handleOptimize('tr')} disabled={isLoading || !termsAccepted} className="bg-black text-white border-2 border-black font-bold py-3 sm:py-4 rounded-xl shadow-lg shadow-slate-200 transition-all flex items-center justify-center gap-2 hover:bg-slate-800 active:scale-[0.98] disabled:opacity-50 disabled:cursor-not-allowed text-sm sm:text-base">{isLoading && cvLanguage === 'tr' ? <RefreshCw className="w-5 h-5 animate-spin" /> : <Sparkles className="w-5 h-5" />} Türkçe CV Tasarla</button>
+                  <button onClick={() => handleOptimize('en')} disabled={isLoading || !termsAccepted} className="bg-white text-slate-900 border-2 border-slate-200 font-bold py-3 sm:py-4 rounded-xl shadow-sm transition-all flex items-center justify-center gap-2 hover:border-slate-400 hover:bg-slate-50 active:scale-[0.98] disabled:opacity-50 disabled:cursor-not-allowed text-sm sm:text-base">{isLoading && cvLanguage === 'en' ? <RefreshCw className="w-5 h-5 animate-spin" /> : <Globe className="w-5 h-5" />} İngilizce CV Tasarla</button>
+                </div>
+                
+                {/* --- Mülakat Simülasyonu Butonu --- */}
+                <button 
+                  onClick={handleStartInterview} 
+                  disabled={!termsAccepted}
+                  className="w-full bg-black text-white border-2 border-black font-bold py-3 sm:py-4 rounded-xl shadow-md transition-all flex items-center justify-center gap-2 hover:bg-slate-800 active:scale-[0.98] disabled:opacity-50 disabled:cursor-not-allowed text-sm sm:text-base"
+                >
+                  <MessageSquare className="w-5 h-5" /> Mülakat Simülasyonunu Başlat
+                </button>
+
                 {/* Aksiyon Butonları */}
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 sm:gap-4">
                   <button onClick={() => handleOptimize('tr')} disabled={isLoading} className="bg-black text-white border-2 border-black font-bold py-3 sm:py-4 rounded-xl shadow-lg shadow-slate-200 transition-all flex items-center justify-center gap-2 hover:bg-slate-800 active:scale-[0.98] disabled:opacity-50 disabled:cursor-not-allowed text-sm sm:text-base">{isLoading && cvLanguage === 'tr' ? <RefreshCw className="w-5 h-5 animate-spin" /> : <Sparkles className="w-5 h-5" />} Türkçe CV Tasarla</button>
@@ -2556,6 +2588,48 @@ const App = () => {
         )}
 
       </div>
+      {/* KVKK MODAL */}
+        {isKvkkModalOpen && (
+          <div className="fixed inset-0 z-[200] flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm animate-in fade-in">
+            <div className="bg-white rounded-2xl shadow-2xl w-full max-w-lg overflow-hidden flex flex-col max-h-[80vh]">
+              <div className="p-4 border-b border-slate-100 flex justify-between items-center bg-slate-50">
+                <h3 className="font-bold text-slate-800 flex items-center gap-2"><ShieldCheck className="w-5 h-5 text-black"/> KVKK Aydınlatma Metni</h3>
+                <button onClick={() => setIsKvkkModalOpen(false)} className="text-slate-400 hover:text-black transition-colors"><X className="w-5 h-5"/></button>
+              </div>
+              <div className="p-6 overflow-y-auto text-sm text-slate-600 space-y-4">
+                <p><strong>Hazır CV</strong> platformunu kullandığınız için teşekkür ederiz. Gizliliğiniz ve veri güvenliğiniz bizim için en yüksek önceliktir.</p>
+                <p><strong>1. Veri İşleme ve Saklama:</strong> Sisteme yüklediğiniz CV dosyalarınız (PDF) ve içindeki kişisel verileriniz (ad, iletişim bilgileri, eğitim, iş geçmişi vb.) hiçbir veri tabanında <strong>kaydedilmez, saklanmaz ve depolanmaz.</strong></p>
+                <p><strong>2. Yapay Zeka (Üçüncü Taraf) Aktarımı:</strong> Verileriniz, CV optimizasyonu ve mülakat simülasyonu yapabilmek amacıyla anlık olarak yurtdışı merkezli Google Gemini API sunucularına güvenli bir şekilde aktarılır. İşlem tamamlandığı ve sonuç size gösterildiği anda tüm veriler sistemin RAM (geçici) hafızasından kalıcı olarak yok edilir.</p>
+                <p><strong>3. Onay:</strong> Sistemimizi kullanarak kişisel verilerinizin bu kapsamda anlık olarak işlenmesini ve yurt dışı sunucularına aktarılmasını özgür iradenizle kabul etmiş sayılırsınız.</p>
+              </div>
+              <div className="p-4 border-t border-slate-100 bg-slate-50 flex justify-end">
+                <button onClick={() => setIsKvkkModalOpen(false)} className="bg-black text-white px-6 py-2 rounded-lg font-bold text-sm hover:bg-slate-800 transition-colors">Anladım</button>
+              </div>
+            </div>
+          </div>
+        )}
+
+        {/* KULLANIM KOŞULLARI MODAL */}
+        {isTermsModalOpen && (
+          <div className="fixed inset-0 z-[200] flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm animate-in fade-in">
+            <div className="bg-white rounded-2xl shadow-2xl w-full max-w-lg overflow-hidden flex flex-col max-h-[80vh]">
+              <div className="p-4 border-b border-slate-100 flex justify-between items-center bg-slate-50">
+                <h3 className="font-bold text-slate-800 flex items-center gap-2"><FileText className="w-5 h-5 text-black"/> Kullanım Koşulları</h3>
+                <button onClick={() => setIsTermsModalOpen(false)} className="text-slate-400 hover:text-black transition-colors"><X className="w-5 h-5"/></button>
+              </div>
+              <div className="p-6 overflow-y-auto text-sm text-slate-600 space-y-4">
+                <p>Hazır CV platformunu kullanarak aşağıdaki koşulları kabul etmiş sayılırsınız:</p>
+                <p><strong>1. Sorumluluk Reddi:</strong> Hazır CV, yapay zeka (AI) destekli deneysel ve asistan bir araçtır. Sistem tarafından oluşturulan özgeçmişlerin, analiz skorlarının veya mülakat geri bildirimlerinin mutlak doğruluğu garanti edilemez.</p>
+                <p><strong>2. İşe Alım Garantisi:</strong> Bu platformun amacı CV'nizi profesyonelleştirmektir. Üretilen dokümanlar üzerinden herhangi bir işe alım, ATS (Aday Takip Sistemi) onay garantisi veya mülakat başarısı taahhüt edilmez.</p>
+                <p><strong>3. Son Kontrol Sorumluluğu:</strong> Üretilen PDF çıktılarını indirmeden ve resmi iş başvurularında kullanmadan önce okumak, varsa yapay zeka halüsinasyonlarını (yanlış bilgileri) düzeltmek tamamen sizin (kullanıcının) sorumluluğundadır.</p>
+                <p><strong>4. Hizmet Kesintisi:</strong> Hizmet "olduğu gibi" sunulmaktadır. Geliştirici, API yoğunluğu veya sunucu kaynaklı yaşanabilecek kesintilerden sorumlu tutulamaz.</p>
+              </div>
+              <div className="p-4 border-t border-slate-100 bg-slate-50 flex justify-end">
+                <button onClick={() => setIsTermsModalOpen(false)} className="bg-black text-white px-6 py-2 rounded-lg font-bold text-sm hover:bg-slate-800 transition-colors">Kabul Ediyorum</button>
+              </div>
+            </div>
+          </div>
+        )}
     </>
   );
 };
