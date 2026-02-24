@@ -1745,21 +1745,7 @@ const App = () => {
                   <MessageSquare className="w-5 h-5" /> Mülakat Simülasyonunu Başlat
                 </button>
 
-                {/* Aksiyon Butonları */}
-                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 sm:gap-4">
-                  <button onClick={() => handleOptimize('tr')} disabled={isLoading} className="bg-black text-white border-2 border-black font-bold py-3 sm:py-4 rounded-xl shadow-lg shadow-slate-200 transition-all flex items-center justify-center gap-2 hover:bg-slate-800 active:scale-[0.98] disabled:opacity-50 disabled:cursor-not-allowed text-sm sm:text-base">{isLoading && cvLanguage === 'tr' ? <RefreshCw className="w-5 h-5 animate-spin" /> : <Sparkles className="w-5 h-5" />} Türkçe CV Tasarla</button>
-                  <button onClick={() => handleOptimize('en')} disabled={isLoading} className="bg-white text-slate-900 border-2 border-slate-200 font-bold py-3 sm:py-4 rounded-xl shadow-sm transition-all flex items-center justify-center gap-2 hover:border-slate-400 hover:bg-slate-50 active:scale-[0.98] disabled:opacity-50 disabled:cursor-not-allowed text-sm sm:text-base">{isLoading && cvLanguage === 'en' ? <RefreshCw className="w-5 h-5 animate-spin" /> : <Globe className="w-5 h-5" />} İngilizce CV Tasarla</button>
-                </div>
                 
-                {/* --- Mülakat Simülasyonu Butonu --- */}
-                <button 
-                  onClick={handleStartInterview} 
-                  className="w-full bg-black text-white border-2 border-black font-bold py-3 sm:py-4 rounded-xl shadow-md transition-all flex items-center justify-center gap-2 hover:bg-slate-800 active:scale-[0.98] text-sm sm:text-base"
-                >
-                  <MessageSquare className="w-5 h-5" /> Mülakat Simülasyonunu Başlat
-                </button>
-
-                {error && <p className="text-red-500 text-xs font-bold flex items-center gap-1"><AlertCircle className="w-4 h-4" /> {error}</p>}
               </div>
               
               {/* Analiz & Ekleme */}
