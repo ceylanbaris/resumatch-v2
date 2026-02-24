@@ -11,6 +11,7 @@ import {
   Banknote, Star, Coffee, MousePointer2, Trophy, Search, Type, AlignCenterHorizontal,
   Users, Terminal, AlertOctagon, ThumbsUp, ThumbsDown
 } from 'lucide-react';
+import { track } from '@vercel/analytics';
 
 const STOP_WORDS = [
   've', 'ile', 'için', 'bir', 'bu', 'şu', 'o', 'da', 'de', 'ki', 'mi', 'mu', 'mü', 'ama', 'fakat', 
@@ -700,7 +701,8 @@ const App = () => {
         setError("Mülakat için önce CV ve İş İlanı girmelisiniz.");
         return;
     }
-    
+    // Kullanıcı mülakat butonuna bastığında Vercel'e bildiriyoruz
+    track('Start Interview');
     setInterviewOpen(true);
     setInterviewType(null); 
     setInterviewMessages([]);
@@ -873,6 +875,8 @@ const App = () => {
     setLoadingText(lang === 'tr' ? "📄 PDF Analiz Ediliyor..." : "📄 Analyzing PDF...");
     setError(null);
     setCvLanguage(lang);
+    // Kullanıcı hangi dilde CV oluşturduysa Vercel'e bildiriyoruz
+    track('Generate CV', { language: lang });
 
     const progressInterval = setInterval(() => {
         setLoadingProgress(prev => {
@@ -1077,7 +1081,8 @@ const App = () => {
     try {
       const resumeElement = resumeRef.current;
       const clone = resumeElement.cloneNode(true);
-      
+      // Hangi şablonla PDF indirildiğini Vercel'e bildiriyoruz
+    track('Download PDF', { template: activeTemplate });
       clone.style.width = '794px'; 
       clone.style.minHeight = '1123px'; 
       clone.style.position = 'absolute';
