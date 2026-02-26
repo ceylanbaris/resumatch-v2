@@ -1560,7 +1560,7 @@ const App = () => {
           </div>
         )}
 
-        <div className="max-w-[1400px] mx-auto grid grid-cols-1 lg:grid-cols-12 gap-4 lg:gap-8 min-h-screen lg:h-full lg:overflow-hidden">
+        <div className="w-full max-w-[1920px] mx-auto grid grid-cols-1 lg:grid-cols-12 gap-4 lg:gap-8 min-h-screen lg:h-full lg:overflow-hidden">
           
           {/* --- SOL PANEL (GİRİŞ ALANI) --- */}
           <div className="lg:col-span-5 space-y-4 lg:space-y-6 lg:h-full lg:overflow-y-auto pr-0 lg:pr-2 pb-10 lg:pb-20 scrollbar-thin scrollbar-thumb-black scrollbar-track-transparent">
