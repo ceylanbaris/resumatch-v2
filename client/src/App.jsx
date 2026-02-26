@@ -940,22 +940,18 @@ const App = () => {
     }, 100);
 
     const langText = lang === 'tr' ? 'TÜRKÇE' : 'İNGİLİZCE';
-    
-    // YENİ GÜNCELLENMİŞ YAPAY ZEKA TALİMATI (PROMPT)
     const systemPrompt = `Sen profesyonel bir İK ve ATS uzmanısın. Kullanıcının CV'sini iş ilanına göre uyarla.
     
     🛑 ADIM 1: CV DOĞRULAMA KONTROLÜ (GÜVENLİK BARİYERİ)
-    Öncelikle kullanıcının yüklediği 'CV' metnini incele. Bu metnin gerçekten bir özgeçmiş (CV) olma ihtimalini %0 ile %100 arasında hesapla. (İsim, iletişim, eğitim, iş deneyimi gibi emareler ara).
-    Eğer bu oran %40'ın altındaysa (yani metin bir fatura, hikaye, yemek tarifi, alakasız bir makale veya sadece rastgele harfler ise), SADECE aşağıdaki JSON'ı döndür ve İŞLEMİ DURDUR:
-    {
-      "is_valid_cv": false,
-      "error_message": "🚨 Güvenlik Uyarısı: Yüklediğiniz doküman bir özgeçmişe (CV) benzemiyor. Lütfen geçerli bir CV yüklediğinizden emin olun."
-    }
+    Öncelikle kullanıcının yüklediği 'CV' metnini incele. Bu metnin gerçekten bir özgeçmiş (CV) olma ihtimalini %0 ile %100 arasında hesapla.
+    Eğer bu oran %40'ın altındaysa (fatura, hikaye, rastgele harfler vb.), SADECE aşağıdaki JSON'ı döndür ve İŞLEMİ DURDUR:
+    {"is_valid_cv": false, "error_message": "🚨 Güvenlik Uyarısı: Yüklediğiniz doküman bir özgeçmişe (CV) benzemiyor. Lütfen geçerli bir CV yüklediğinizden emin olun."}
 
-    ✅ ADIM 2: EĞER DOKÜMAN BİR CV İSE (%40 ve üzeri eşleşme varsa), AŞAĞIDAKİ STANDART İŞLEME GEÇ:
-    ÖNEMLİ: Çıktı JSON'unda hem "1. Tekil Şahıs" (Ben yaptım, Yürüttüm) hem de "3. Tekil Şahıs" (Yaptı, Yürütüldü) versiyonlarını AYRI AYRI oluşturmalısın. Bu sayede kullanıcı arayüzde anlık geçiş yapabilecek.
-
-    ÇIKTI FORMATI: Mutlaka geçerli bir JSON objesi döndür.
+    ✅ ADIM 2: EĞER DOKÜMAN BİR CV İSE (%40 ve üzeri eşleşme varsa), AŞAĞIDAKİ İŞLEME GEÇ:
+    
+    ÇIKTI FORMATI: Mutlaka KUSURSUZ VE GEÇERLİ bir JSON objesi döndür. 
+    DİKKAT: JSON içinde asla yorum satırı (//) kullanma! Tüm JSON anahtarları (key) KESİNLİKLE çift tırnak ("") içinde olmalıdır. Dizi (array) veya obje (object) sonlarında fazladan virgül (trailing comma) BIRAKMA.
+    
     JSON Şeması:
     {
       "name": "Kişinin Adı",
@@ -964,31 +960,31 @@ const App = () => {
       "phone": "Telefon Numarası",
       "email": "E-posta Adresi",
       "linkedin": "linkedin.com/in/kullaniciadi",
-      "summary_v1": "1. Tekil Şahıs (Ben) ağzından yazılmış profesyonel özet (Örn: Deneyimimle... sağladım)",
-      "summary_v3": "3. Tekil Şahıs (O) veya Nesnel ağızdan yazılmış profesyonel özet (Örn: Deneyimiyle... sağlandı)",
+      "summary_v1": "1. Tekil Şahıs (Ben) ağzından yazılmış profesyonel özet",
+      "summary_v3": "3. Tekil Şahıs (O) veya Nesnel ağızdan yazılmış profesyonel özet",
       "experience": [{
           "role": "Pozisyon", 
           "company": "Şirket", 
           "date": "Tarih", 
-          "bullets_v1": ["1. Tekil (Ben) diliyle madde 1", "1. Tekil (Ben) diliyle madde 2"],
-          "bullets_v3": ["3. Tekil (O) diliyle madde 1", "3. Tekil (O) diliyle madde 2"]
+          "bullets_v1": ["1. Tekil (Ben) diliyle madde 1"],
+          "bullets_v3": ["3. Tekil (O) diliyle madde 1"]
       }],
-      "education": [{"degree": "Bölüm veya Sertifika Adı", "school": "Okul veya Kurum", "date": "", "details": ""}],
+      "education": [{"degree": "Bölüm Adı", "school": "Okul veya Kurum", "date": "", "details": ""}],
       "skills": ["Yetenek1", "Yetenek2"],
-      "additional": ["Dil Bilgisi", "Hobiler", "Ödüller (Sertifikaları BURAYA KOYMA, EĞİTİME KOY)"],
+      "additional": ["Dil Bilgisi", "Hobiler"],
       "analysis": {
         "scores": {
-          "overall": 70,
+          "overall": 75,
           "skills": 80,
           "experience": 70,
-          "education": 60
+          "education": 75
         },
         "matches": {
-          "hard_skills": ["SQL", "React", "Veri Analizi"],
-          "soft_skills": ["Takım Çalışması", "Liderlik"]
+          "hard_skills": ["SQL", "React"],
+          "soft_skills": ["Takım Çalışması"]
         },
-        "gaps": ["İlanda olup CV'de eksik olan önemli yetenekler (Kısa kelimeler, max 5 adet)"],
-        "additions": ["CV'yi güçlendirmek için eklenen anahtar kelimeler ve yetkinlikler"]
+        "gaps": ["Eksik yetenek 1"],
+        "additions": ["Eklenen kelime 1"]
       }
     }
       
@@ -998,12 +994,12 @@ const App = () => {
     3. Tüm CV içeriğini profesyonel ${langText} olarak oluştur. 
     4. İngilizce ise tarihleri (e.g., "Present", "Jan 2024") İngilizce, Türkçe ise (e.g., "Devam Ediyor", "Ocak 2024") Türkçe yap.
     5. Orijinal verileri asla değiştirme, sadece ${langText} diline en uygun ve profesyonel şekilde uyarla.
-    6. SKORLAMA (OBJEKTİF VE GERÇEKÇİ OL): Puanları (0-100) belirlerken sektör standartlarında adil bir ATS sistemi gibi davran. Ne çok bol keseden puan ver ne de aşırı acımasız ol. Aday ilandaki kriterleri büyük oranda karşılıyorsa %75-85, kısmen karşılıyorsa %60-75, mükemmel eşleşiyorsa %85-100 arası mantıklı puanlar ver. Bariz deneyim veya yetenek eksikliklerinde puanı kırmaktan çekinme ancak adayın var olan yeteneklerini de adilce ödüllendir. DİKKAT: "overall" (Genel Uyumluluk) skoru, diğer üç skorun (skills, experience, education) tam olarak matematiksel ortalaması olmak ZORUNDADIR.
+    6. SKORLAMA (OBJEKTİF VE GERÇEKÇİ OL): Puanları (0-100) belirlerken sektör standartlarında adil bir ATS sistemi gibi davran. Ne çok bol keseden puan ver ne de aşırı acımasız ol. Aday ilandaki kriterleri büyük oranda karşılıyorsa %75-85, kısmen karşılıyorsa %60-75, mükemmel eşleşiyorsa %85-100 arası mantıklı puanlar ver. Bariz deneyim veya yetenek eksikliklerinde puanı kırmaktan çekinme ancak adayın var olan yeteneklerini de adilce ödüllendir. DİKKAT: "overall" skoru, diğer üç skorun tam olarak matematiksel ortalaması olmak ZORUNDADIR.
     7. KRİTİK KURAL: Eğer bir deneyim veya eğitim maddesinin tarihi orijinal metinde yoksa, tarih alanına uydurma bir tarih yazma. Boş bırak (JSON'da boş string "" olarak gönder).
-    8. GİZLİLİK VE GENELLİK (ÇOK ÖNEMLİ): Kişisel Özet (Summary) kısmında ASLA iş ilanını yayınlayan şirketin (Örn: Amazon, Trendyol vb.) ismini geçirme. "Şirketinizde çalışmak istiyorum" veya "Firmanızın hedeflerine..." gibi ifadeler KULLANMA. Bunun yerine "Sektördeki deneyimimi global projelerde değerlendirmek..." gibi şirketten bağımsız ama ilandaki yetkinliklere (keyword) odaklı, profesyonel ve genel geçer bir dil kullan. Amaç: Adayın bu yeteneklere doğal olarak sahip olduğunu göstermek, "size özel yazdım" diye bağırmamak.
-    9. FORMATLAMA (KESİN KURAL): Metinlerin içinde asla markdown kalınlaştırma (** **) işaretleri kullanma. Kelimeleri yalın bırak. Hangi kelimelerin önemli olduğunu zaten "matches" dizisinde veriyorsun, arayüz onları otomatik olarak vurgulayacak.
-    10. EĞİTİM VE SERTİFİKALAR: Tüm Sertifikaları, Kursları, Bootcamp'leri ve Eğitim programlarını KESİNLİKLE "education" dizisinin içine ekle. Bunları "additional" veya "skills" kısmına koyma. "degree" alanına sertifikanın adını, "school" alanına veren kurumu yaz.
-    11. SKILLS KISITLAMASI: 'skills' dizisine EN FAZLA 12 adet, en kritik teknik yeteneği ekle. Sayfayı taşırmamak için az ve öz olmalı. Benzer yetenekleri birleştir (Örn: HTML/CSS).`;
+    8. GİZLİLİK VE GENELLİK (ÇOK ÖNEMLİ): Kişisel Özet (Summary) kısmında ASLA iş ilanını yayınlayan şirketin ismini geçirme. 
+    9. FORMATLAMA (KESİN KURAL): Metinlerin içinde asla markdown kalınlaştırma (** **) işaretleri kullanma. Kelimeleri yalın bırak. 
+    10. EĞİTİM VE SERTİFİKALAR: Tüm Sertifikaları, Kursları, Bootcamp'leri ve Eğitim programlarını KESİNLİKLE "education" dizisinin içine ekle. Bunları "additional" veya "skills" kısmına koyma.
+    11. SKILLS KISITLAMASI: 'skills' dizisine EN FAZLA 12 adet, en kritik teknik yeteneği ekle.`;
 
     try {
       const payload = {
