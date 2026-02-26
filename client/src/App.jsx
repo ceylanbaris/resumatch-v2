@@ -102,6 +102,8 @@ const App = () => {
   const [lastDeletedSection, setLastDeletedSection] = useState(null);
 
   const [previewScale, setPreviewScale] = useState(1);
+  const [resumeHeight, setResumeHeight] = useState(1123); // Dinamik Yükseklik Takibi
+
   const previewContainerRef = useRef(null);
   const mobilePreviewRef = useRef(null);
 
@@ -145,6 +147,18 @@ const App = () => {
     ReactGA.initialize("G-QKFMGDH7GJ"); 
     ReactGA.send("pageview"); 
   }, []);
+
+  // YENİ: DİNAMİK CV YÜKSEKLİĞİNİ TAKİP ETME (Taşmaları önler)
+  useEffect(() => {
+    if (!resumeRef.current) return;
+    const observer = new ResizeObserver((entries) => {
+      for (let entry of entries) {
+        setResumeHeight(Math.max(1123, entry.target.scrollHeight));
+      }
+    });
+    observer.observe(resumeRef.current);
+    return () => observer.disconnect();
+  }, [optimizedData, activeTemplate, sectionsOrder]);
 
   useEffect(() => {
     const handleResize = () => {
@@ -281,7 +295,6 @@ const App = () => {
     document.execCommand(command, false, null);
   };
 
-  // YENİ ÇEVİRİLER EKLENDİ
   const translations = {
     tr: {
       summary: "Kişisel Özet",
@@ -638,7 +651,6 @@ const App = () => {
     }
   };
 
-  // YENİ GÜNCELLENMİŞ SANITIZE DATA (Hard/Soft Skills ve Scores İçin)
   const sanitizeData = (data) => {
       if (!data) return data;
       const clean = (str) => typeof str === 'string' ? str.replace(/\*\*/g, '') : str;
@@ -940,6 +952,8 @@ const App = () => {
     }, 100);
 
     const langText = lang === 'tr' ? 'TÜRKÇE' : 'İNGİLİZCE';
+    
+    // YENİ GÜNCELLENMİŞ YAPAY ZEKA TALİMATI (PROMPT) - KATI YETENEK KISITLAMASI
     const systemPrompt = `Sen profesyonel bir İK ve ATS uzmanısın. Kullanıcının CV'sini iş ilanına göre uyarla.
     
     🛑 ADIM 1: CV DOĞRULAMA KONTROLÜ (GÜVENLİK BARİYERİ)
@@ -950,7 +964,7 @@ const App = () => {
     ✅ ADIM 2: EĞER DOKÜMAN BİR CV İSE (%40 ve üzeri eşleşme varsa), AŞAĞIDAKİ İŞLEME GEÇ:
     
     ÇIKTI FORMATI: Mutlaka KUSURSUZ VE GEÇERLİ bir JSON objesi döndür. 
-    DİKKAT: JSON içinde asla yorum satırı (//) kullanma! Tüm JSON anahtarları (key) KESİNLİKLE çift tırnak ("") içinde olmalıdır. Dizi (array) veya obje (object) sonlarında fazladan virgül (trailing comma) BIRAKMA.
+    DİKKAT: JSON içinde asla yorum satırı (//) kullanma! Tüm JSON anahtarları çift tırnak ("") içinde olmalıdır.
     
     JSON Şeması:
     {
@@ -970,8 +984,8 @@ const App = () => {
           "bullets_v3": ["3. Tekil (O) diliyle madde 1"]
       }],
       "education": [{"degree": "Bölüm Adı", "school": "Okul veya Kurum", "date": "", "details": ""}],
-      "skills": ["Yetenek1", "Yetenek2"],
-      "additional": ["Dil Bilgisi", "Hobiler"],
+      "skills": ["SQL", "React", "Çevik Yönetim"], 
+      "additional": ["İngilizce (C1)", "Yüzme"],
       "analysis": {
         "scores": {
           "overall": 75,
@@ -994,12 +1008,12 @@ const App = () => {
     3. Tüm CV içeriğini profesyonel ${langText} olarak oluştur. 
     4. İngilizce ise tarihleri (e.g., "Present", "Jan 2024") İngilizce, Türkçe ise (e.g., "Devam Ediyor", "Ocak 2024") Türkçe yap.
     5. Orijinal verileri asla değiştirme, sadece ${langText} diline en uygun ve profesyonel şekilde uyarla.
-    6. SKORLAMA (OBJEKTİF VE GERÇEKÇİ OL): Puanları (0-100) belirlerken sektör standartlarında adil bir ATS sistemi gibi davran. Ne çok bol keseden puan ver ne de aşırı acımasız ol. Aday ilandaki kriterleri büyük oranda karşılıyorsa %75-85, kısmen karşılıyorsa %60-75, mükemmel eşleşiyorsa %85-100 arası mantıklı puanlar ver. Bariz deneyim veya yetenek eksikliklerinde puanı kırmaktan çekinme ancak adayın var olan yeteneklerini de adilce ödüllendir. DİKKAT: "overall" skoru, diğer üç skorun tam olarak matematiksel ortalaması olmak ZORUNDADIR.
+    6. SKORLAMA (OBJEKTİF VE GERÇEKÇİ OL): Puanları (0-100) belirlerken sektör standartlarında adil bir ATS sistemi gibi davran. DİKKAT: "overall" skoru, diğer üç skorun tam olarak matematiksel ortalaması olmak ZORUNDADIR.
     7. KRİTİK KURAL: Eğer bir deneyim veya eğitim maddesinin tarihi orijinal metinde yoksa, tarih alanına uydurma bir tarih yazma. Boş bırak (JSON'da boş string "" olarak gönder).
     8. GİZLİLİK VE GENELLİK (ÇOK ÖNEMLİ): Kişisel Özet (Summary) kısmında ASLA iş ilanını yayınlayan şirketin ismini geçirme. 
     9. FORMATLAMA (KESİN KURAL): Metinlerin içinde asla markdown kalınlaştırma (** **) işaretleri kullanma. Kelimeleri yalın bırak. 
     10. EĞİTİM VE SERTİFİKALAR: Tüm Sertifikaları, Kursları, Bootcamp'leri ve Eğitim programlarını KESİNLİKLE "education" dizisinin içine ekle. Bunları "additional" veya "skills" kısmına koyma.
-    11. SKILLS KISITLAMASI: 'skills' dizisine EN FAZLA 12 adet, en kritik teknik yeteneği ekle.`;
+    11. SKILLS (YETENEKLER) KISITLAMASI - ÇOK ÖNEMLİ: 'skills' dizisine EN FAZLA 12 adet yetenek ekle. Her bir yetenek KESİNLİKLE MAKSİMUM 3 KELİME olmalıdır! Asla "lisans derecesi", "finansal kurumlarda çalışma deneyimi" gibi uzun cümleler yazma. Sadece kısa, vurucu yetenek ve teknoloji isimleri yaz (Örn: Python, Proje Yönetimi, SQL, Çevik Çalışma).`;
 
     try {
       const payload = {
@@ -1153,6 +1167,7 @@ const App = () => {
 
       clone.style.width = '794px'; 
       clone.style.minHeight = '1123px'; 
+      clone.style.height = 'max-content'; // YENİ: PDF için de sınırsız uzunluk desteği
       clone.style.position = 'absolute';
       clone.style.top = '0'; 
       clone.style.left = '0';
@@ -1971,30 +1986,30 @@ const App = () => {
                 </div>
               ) : (
                 
-                /* KAPSAYICI KUTU: A4 kağıdının boyutlarını tam tutar, ezilmeyi ve gereksiz boşluğu engeller */
+                /* KAPSAYICI KUTU: Artık boyu dinamik olarak uzuyor! */
                 <div 
                   className="relative transition-all duration-300 mx-auto bg-white shadow-2xl" 
                   style={{ 
                      width: `${794 * previewScale}px`, 
-                     height: `${1123 * previewScale}px`,
-                     flexShrink: 0 /* Mobilde eziş büzüş olmasını engeller */
+                     height: `${resumeHeight * previewScale}px`, // YENİ: Sabit 1123px yerine dinamik yükseklik
+                     flexShrink: 0 
                   }}
                 >
                   
-                  {/* ASIL A4 KAĞIDI: Boyutları sabittir, sol üstten scale edilir */}
+                  {/* ASIL A4 KAĞIDI: Taşmalar artık kesilmiyor, kağıt uzuyor! */}
                   <div 
                     id="resume-preview" 
                     ref={resumeRef}
-                    className={`absolute top-0 left-0 overflow-hidden select-none origin-top-left ${activeTemplate === 'classic' || activeTemplate === 'bold' ? 'font-serif' : 'font-sans'}`} 
+                    className={`absolute top-0 left-0 overflow-visible select-none origin-top-left ${activeTemplate === 'classic' || activeTemplate === 'bold' ? 'font-serif' : 'font-sans'}`} 
                     style={{ 
                        width: '794px',
-                       height: '1123px',
-                       minWidth: '794px', /* SQUISH ENGELLEYİCİ */
-                       minHeight: '1123px', /* SQUISH ENGELLEYİCİ */
+                       minWidth: '794px', 
+                       minHeight: '1123px',
+                       height: 'max-content', // YENİ: Sınırsız içerik desteği
                        paddingTop: activeTemplate === 'professional' ? '40px' : '32px',
                        paddingRight: activeTemplate === 'professional' ? '40px' : '32px',
                        paddingLeft: activeTemplate === 'professional' ? '40px' : '32px',
-                       paddingBottom: '0px',
+                       paddingBottom: '32px', // YENİ: Alt kısımdan biraz boşluk
                        transform: `scale(${previewScale})`,
                     }} 
                   >
@@ -2262,16 +2277,8 @@ const App = () => {
                         {/* Sıralanabilir Bölümler */}
                         {sectionsOrder.map((sectionId, index) => {
                           const isLast = index === sectionsOrder.length - 1;
-                          let colSpan = 'col-span-2';
-                          const shortSections = ['skills', 'additional', ...sectionsOrder.filter(s => s.startsWith('custom_'))];
+                          let colSpan = 'col-span-2'; // YENİ: Artık hiçbir bölüm yan yana sıkışmayacak, hepsi tam genişlik
                           
-                          if (activeTemplate === 'modern' && shortSections.includes(sectionId)) {
-                            const prev = sectionsOrder[index - 1];
-                            const next = sectionsOrder[index + 1];
-                            const isNeighborRelated = (shortSections.includes(prev) || shortSections.includes(next));
-                            if (isNeighborRelated) colSpan = 'col-span-2 lg:col-span-1';
-                          }
-
                           if (sectionId.startsWith('custom_') && optimizedData[sectionId] && typeof optimizedData[sectionId][0] === 'object') {
                                 colSpan = 'col-span-2';
                           }
@@ -2408,27 +2415,29 @@ const App = () => {
                                      </div>
                                   ))}
 
+                                  {/* YENİ: YETENEKLER TASARIMI */}
                                   {sectionId === 'skills' && optimizedData.skills?.length > 0 && (
-                                     <div key={`skills-${showHighlights ? 'hl' : 'no'}`} className="grid grid-cols-4 gap-x-2 gap-y-0.5">
+                                     <div key={`skills-${showHighlights ? 'hl' : 'no'}`} className="grid grid-cols-2 sm:grid-cols-3 gap-x-6 gap-y-1.5">
                                        {optimizedData.skills.map((s, i) => (
-                                         <div key={i} className={`text-[12px] text-slate-700 flex items-center gap-1 ${editableClass} relative group/item cursor-move leading-normal pr-4`} contentEditable suppressContentEditableWarning onBlur={(e) => updateSimpleList('skills', i, e.target.innerText)} draggable onDragStart={(e) => onSubDragStart(e, 'skills', i)} onDragOver={(e) => onSubDragOver(e, 'skills', i)} onDragEnd={onSubDragEnd}>
-                                           <div className="absolute -left-3 opacity-0 group-hover/item:opacity-100 transition-opacity p-0.5 text-slate-300 hover:text-black"><Move className="w-2.5 h-2.5" /></div>
-                                           <button onClick={() => removeSectionItem('skills', i)} className="absolute right-0 top-1/2 -translate-y-1/2 opacity-0 group-hover/item:opacity-100 text-slate-300 hover:text-red-500 transition-opacity"><Trash2 className="w-3 h-3" /></button>
-                                           <span className="w-1 h-1 rounded-full shrink-0" style={{ backgroundColor: themeColor }}></span> 
-                                           <span className="break-words">{highlightKeywords(s)}</span>
+                                         <div key={i} className={`text-[12px] text-slate-700 flex items-start gap-2 ${editableClass} relative group/item cursor-move leading-snug pr-2`} contentEditable suppressContentEditableWarning onBlur={(e) => updateSimpleList('skills', i, e.target.innerText)} draggable onDragStart={(e) => onSubDragStart(e, 'skills', i)} onDragOver={(e) => onSubDragOver(e, 'skills', i)} onDragEnd={onSubDragEnd}>
+                                           <div className="absolute -left-4 top-0 opacity-0 group-hover/item:opacity-100 transition-opacity p-0.5 text-slate-300 hover:text-black"><Move className="w-2.5 h-2.5" /></div>
+                                           <button onClick={() => removeSectionItem('skills', i)} className="absolute right-0 top-0 opacity-0 group-hover/item:opacity-100 text-slate-300 hover:text-red-500 transition-opacity"><Trash2 className="w-3 h-3" /></button>
+                                           <span className="w-1 h-1 rounded-full shrink-0 mt-[6px]" style={{ backgroundColor: themeColor }}></span> 
+                                           <span className="break-words flex-1">{highlightKeywords(s)}</span>
                                          </div>
                                        ))}
                                      </div>
                                   )}
 
-                                  {/* --- GENEL "EK BİLGİLER" VEYA "BASİT (SIMPLE) CUSTOM" BÖLÜMLER --- */}
+                                  {/* YENİ: EK BİLGİLER TASARIMI */}
                                   {(sectionId === 'additional' || (sectionId.startsWith('custom_') && optimizedData[sectionId] && typeof optimizedData[sectionId][0] !== 'object')) && optimizedData[sectionId]?.length > 0 && (
-                                     <div key={`cust-${sectionId}-${showHighlights ? 'hl' : 'no'}`} className="grid grid-cols-3 gap-x-4 gap-y-1">
+                                     <div key={`cust-${sectionId}-${showHighlights ? 'hl' : 'no'}`} className="grid grid-cols-2 sm:grid-cols-3 gap-x-6 gap-y-1.5">
                                        {optimizedData[sectionId].map((a, i) => (
-                                         <div key={i} className={`text-[12px] text-slate-700 ${editableClass} relative group/item cursor-move flex items-center gap-1 leading-normal pr-6`} contentEditable suppressContentEditableWarning onBlur={(e) => updateSimpleList(sectionId, i, e.target.innerText)} draggable onDragStart={(e) => onSubDragStart(e, sectionId, i)} onDragOver={(e) => onSubDragOver(e, sectionId, i)} onDragEnd={onSubDragEnd}>
-                                           <div className="absolute -left-4 top-0.5 opacity-0 group-hover/item:opacity-100 transition-opacity p-0.5 text-slate-300 hover:text-black"><Move className="w-3 h-3" /></div>
-                                           <button onClick={() => removeSectionItem(sectionId, i)} className="absolute right-0 top-1/2 -translate-y-1/2 opacity-0 group-hover/item:opacity-100 text-slate-300 hover:text-red-500 transition-opacity"><Trash2 className="w-3 h-3" /></button>
-                                           <span className="mr-1">•</span> <span className="break-words">{highlightKeywords(a)}</span>
+                                         <div key={i} className={`text-[12px] text-slate-700 ${editableClass} relative group/item cursor-move flex items-start gap-1.5 leading-snug pr-2`} contentEditable suppressContentEditableWarning onBlur={(e) => updateSimpleList(sectionId, i, e.target.innerText)} draggable onDragStart={(e) => onSubDragStart(e, sectionId, i)} onDragOver={(e) => onSubDragOver(e, sectionId, i)} onDragEnd={onSubDragEnd}>
+                                           <div className="absolute -left-4 top-0 opacity-0 group-hover/item:opacity-100 transition-opacity p-0.5 text-slate-300 hover:text-black"><Move className="w-3 h-3" /></div>
+                                           <button onClick={() => removeSectionItem(sectionId, i)} className="absolute right-0 top-0 opacity-0 group-hover/item:opacity-100 text-slate-300 hover:text-red-500 transition-opacity"><Trash2 className="w-3 h-3" /></button>
+                                           <span className="font-bold mt-[-1px] text-slate-400">•</span> 
+                                           <span className="break-words flex-1">{highlightKeywords(a)}</span>
                                          </div>
                                        ))}
                                      </div>
