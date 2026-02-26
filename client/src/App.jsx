@@ -978,10 +978,10 @@ const App = () => {
       "additional": ["Dil Bilgisi", "Hobiler", "Ödüller (Sertifikaları BURAYA KOYMA, EĞİTİME KOY)"],
       "analysis": {
         "scores": {
-          "overall": 90,
-          "skills": 85,
-          "experience": 80,
-          "education": 100
+          "overall": 70,
+          "skills": 80,
+          "experience": 70,
+          "education": 60
         },
         "matches": {
           "hard_skills": ["SQL", "React", "Veri Analizi"],
@@ -998,7 +998,7 @@ const App = () => {
     3. Tüm CV içeriğini profesyonel ${langText} olarak oluştur. 
     4. İngilizce ise tarihleri (e.g., "Present", "Jan 2024") İngilizce, Türkçe ise (e.g., "Devam Ediyor", "Ocak 2024") Türkçe yap.
     5. Orijinal verileri asla değiştirme, sadece ${langText} diline en uygun ve profesyonel şekilde uyarla.
-    6. "analysis" kısmını da mutlaka ${langText} dilinde doldur. analysis.scores içindeki puanları (0-100 arası) mantıklı ve adil bir şekilde dağıt.
+    6. SKORLAMA (OBJEKTİF VE GERÇEKÇİ OL): Puanları (0-100) belirlerken sektör standartlarında adil bir ATS sistemi gibi davran. Ne çok bol keseden puan ver ne de aşırı acımasız ol. Aday ilandaki kriterleri büyük oranda karşılıyorsa %75-85, kısmen karşılıyorsa %60-75, mükemmel eşleşiyorsa %85-100 arası mantıklı puanlar ver. Bariz deneyim veya yetenek eksikliklerinde puanı kırmaktan çekinme ancak adayın var olan yeteneklerini de adilce ödüllendir. DİKKAT: "overall" (Genel Uyumluluk) skoru, diğer üç skorun (skills, experience, education) tam olarak matematiksel ortalaması olmak ZORUNDADIR.
     7. KRİTİK KURAL: Eğer bir deneyim veya eğitim maddesinin tarihi orijinal metinde yoksa, tarih alanına uydurma bir tarih yazma. Boş bırak (JSON'da boş string "" olarak gönder).
     8. GİZLİLİK VE GENELLİK (ÇOK ÖNEMLİ): Kişisel Özet (Summary) kısmında ASLA iş ilanını yayınlayan şirketin (Örn: Amazon, Trendyol vb.) ismini geçirme. "Şirketinizde çalışmak istiyorum" veya "Firmanızın hedeflerine..." gibi ifadeler KULLANMA. Bunun yerine "Sektördeki deneyimimi global projelerde değerlendirmek..." gibi şirketten bağımsız ama ilandaki yetkinliklere (keyword) odaklı, profesyonel ve genel geçer bir dil kullan. Amaç: Adayın bu yeteneklere doğal olarak sahip olduğunu göstermek, "size özel yazdım" diye bağırmamak.
     9. FORMATLAMA (KESİN KURAL): Metinlerin içinde asla markdown kalınlaştırma (** **) işaretleri kullanma. Kelimeleri yalın bırak. Hangi kelimelerin önemli olduğunu zaten "matches" dizisinde veriyorsun, arayüz onları otomatik olarak vurgulayacak.
