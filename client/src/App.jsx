@@ -739,13 +739,14 @@ const App = () => {
       const systemPrompt = `${basePrompt}
       Elimde bir aday CV'si ve bir İş İlanı var. Amacın bu adayı iş ilanı için mülakata almak.
       
-      GÖREV VE KURALLAR:
+      🛑 GÜVENLİK KONTROLÜ: Öncelikle sana verilen CV metnini kontrol et. Eğer bu metin açıkça bir özgeçmiş değilse (fatura, makale, alakasız metin vb.), mülakata kesinlikle başlama. Adaya doğrudan şunu söyle: "🚨 Yüklediğiniz doküman bir özgeçmişe benzemiyor. Mülakat yapabilmem için lütfen geçerli bir CV PDF'i yükleyin." ve mesajın sonuna [TERMINATE] etiketini koy.
+      
+      EĞER GEÇERLİ BİR CV İSE ŞU KURALLARA UY:
       1. Adaya "Merhaba" de, kısaca rolünü belirt (İK veya Takım Lideri olarak) ve doğrudan ilk soruyu sor.
       2. Sorular adayın CV'sindeki projelere veya iş ilanındaki gerekliliklere özel olsun.
       3. Tek seferde SADECE BİR soru sor.
       4. KESİNLİKLE JSON FORMATI KULLANMA. Süslü parantez {}, "evaluation" gibi yazılım kodları ASLA kullanma. Sadece doğrudan, doğal bir insan gibi konuşarak cevap ver.
       5. Toplamda yaklaşık 10 soruluk bir mülakat olacak. (Şu an 1. sorudasın).`;
-
       try {
           const result = await callGeminiApi({
               contents: [{ parts: [{ text: `CV: ${originalCV}\n\nİlan: ${jobDescription}` }] }],
@@ -919,6 +920,15 @@ const App = () => {
     const langText = lang === 'tr' ? 'TÜRKÇE' : 'İNGİLİZCE';
     const systemPrompt = `Sen profesyonel bir İK ve ATS uzmanısın. Kullanıcının CV'sini iş ilanına göre uyarla.
     
+    🛑 ADIM 1: CV DOĞRULAMA KONTROLÜ (GÜVENLİK BARİYERİ)
+    Öncelikle kullanıcının yüklediği 'CV' metnini incele. Bu metnin gerçekten bir özgeçmiş (CV) olma ihtimalini %0 ile %100 arasında hesapla. (İsim, iletişim, eğitim, iş deneyimi gibi emareler ara).
+    Eğer bu oran %40'ın altındaysa (yani metin bir fatura, hikaye, yemek tarifi, alakasız bir makale veya sadece rastgele harfler ise), SADECE aşağıdaki JSON'ı döndür ve İŞLEMİ DURDUR:
+    {
+      "is_valid_cv": false,
+      "error_message": "🚨 Güvenlik Uyarısı: Yüklediğiniz doküman bir özgeçmişe (CV) benzemiyor. Lütfen geçerli bir CV yüklediğinizden emin olun."
+    }
+
+    ✅ ADIM 2: EĞER DOKÜMAN BİR CV İSE (%40 ve üzeri eşleşme varsa), AŞAĞIDAKİ STANDART İŞLEME GEÇ:
     ÖNEMLİ: Çıktı JSON'unda hem "1. Tekil Şahıs" (Ben yaptım, Yürüttüm) hem de "3. Tekil Şahıs" (Yaptı, Yürütüldü) versiyonlarını AYRI AYRI oluşturmalısın. Bu sayede kullanıcı arayüzde anlık geçiş yapabilecek.
 
     ÇIKTI FORMATI: Mutlaka geçerli bir JSON objesi döndür.
@@ -984,6 +994,15 @@ const App = () => {
       if (text) {
         const cleanText = text.replace(/```json|```/g, '').trim();
         let parsedData = JSON.parse(cleanText);
+
+        // --- YENİ EKLENEN: CV DEĞİLSE İŞLEMİ KES ---
+        if (parsedData.is_valid_cv === false) {
+            setError(parsedData.error_message);
+            setIsLoading(false);
+            setLoadingProgress(0);
+            return; 
+        }
+        // ------------------------------------------
         
         parsedData = sanitizeData(parsedData);
 
