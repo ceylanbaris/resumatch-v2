@@ -131,6 +131,15 @@ const App = () => {
   const [addItemTitle, setAddItemTitle] = useState('');
    
   const [isAddingItem, setIsAddingItem] = useState(false);
+  // YENİ: Toplu CV Yedirme State'leri
+  const [selectedGaps, setSelectedGaps] = useState([]);
+  const [isIntegratingGaps, setIsIntegratingGaps] = useState(false);
+
+  const toggleGapSelection = (gap) => {
+      setSelectedGaps(prev => 
+          prev.includes(gap) ? prev.filter(g => g !== gap) : [...prev, gap]
+      );
+  };
   const [photoZoom, setPhotoZoom] = useState(1);
   const [photoPos, setPhotoPos] = useState({ x: 0, y: 0 });
   const [isDragging, setIsDragging] = useState(false);
@@ -566,47 +575,121 @@ const App = () => {
     });
   };
 
-  const removeSectionItem = (section, index) => {
+ const removeSectionItem = (section, index) => {
     setOptimizedData(prev => {
-      const newData = { ...prev };
-      const list = [...newData[section]];
+      if (!prev) return prev;
+      const newData = JSON.parse(JSON.stringify(prev)); 
+      
+      const list = newData[section] || [];
+      const deletedItem = list[index]; 
+      if (!deletedItem) return prev; 
+
       list.splice(index, 1);
       newData[section] = list;
+
+      if (section === 'skills' && newData.analysis) {
+          if (!newData.analysis.gaps) newData.analysis.gaps = [];
+          if (!newData.analysis.additions) newData.analysis.additions = [];
+          if (!newData.analysis.scores) newData.analysis.scores = { overall: 0, skills: 0, experience: 0, education: 0 };
+          if (!newData.analysis.gap_mapping) newData.analysis.gap_mapping = {};
+
+          // YENİ: Hafızayı kontrol et. Bu silinen yetenek, eskiden hangi "eksik cümlesiydi?"
+          const originalGap = newData.analysis.gap_mapping[deletedItem];
+          const textToRestore = originalGap || deletedItem;
+
+          // Eksiklere Orijinal Metniyle Geri Ekle (En başa)
+          if (!newData.analysis.gaps.includes(textToRestore)) {
+              newData.analysis.gaps.unshift(textToRestore); 
+          }
+          
+          newData.analysis.additions = newData.analysis.additions.filter(a => a !== deletedItem); 
+          
+          // Skoru 4 puan geri düşür
+          newData.analysis.scores.skills = Math.max(0, (newData.analysis.scores.skills || 0) - 4);
+          
+          // Matematiksel Ortalama Hesaplama
+          newData.analysis.scores.overall = Math.round(
+              ((newData.analysis.scores.skills) + 
+               (newData.analysis.scores.experience || 0) + 
+               (newData.analysis.scores.education || 0)) / 3
+          );
+      }
       return newData;
     });
   };
 
-  const removeBulletPoint = (section, expIndex, bulletIndex) => {
+const removeBulletPoint = (section, expIndex, bulletIndex) => {
     if (section.startsWith('custom_')) {
         setOptimizedData(prev => {
-             const newData = { ...prev };
-             const experiences = [...newData[section]];
-             const targetExp = { ...experiences[expIndex] };
-             const targetBullets = [...targetExp.bullets];
-             targetBullets.splice(bulletIndex, 1);
-             targetExp.bullets = targetBullets;
-             experiences[expIndex] = targetExp;
-             newData[section] = experiences;
+             const newData = JSON.parse(JSON.stringify(prev));
+             if(newData[section] && newData[section][expIndex] && newData[section][expIndex].bullets){
+                 newData[section][expIndex].bullets.splice(bulletIndex, 1);
+             }
              return newData;
         });
         return;
     }
 
-    const bulletsKey = narrativeVoice === 'first' ? 'bullets_v1' : 'bullets_v3';
     setOptimizedData(prev => {
-      const newData = { ...prev };
-      const experiences = [...newData.experience];
-      const targetExp = { ...experiences[expIndex] };
-      const targetBullets = targetExp[bulletsKey] ? [...targetExp[bulletsKey]] : [...targetExp.bullets];
+      if (!prev) return prev;
+      const newData = JSON.parse(JSON.stringify(prev)); 
       
-      targetBullets.splice(bulletIndex, 1);
-      targetExp[bulletsKey] = targetBullets;
-      experiences[expIndex] = targetExp;
-      newData.experience = experiences;
+      const targetExp = newData.experience[expIndex];
+      if (!targetExp) return prev;
+      
+      let deletedItem = null;
+
+      if (narrativeVoice === 'first' && targetExp.bullets_v1) {
+          deletedItem = targetExp.bullets_v1[bulletIndex];
+      } else if (narrativeVoice === 'third' && targetExp.bullets_v3) {
+          deletedItem = targetExp.bullets_v3[bulletIndex];
+      } else if (targetExp.bullets) {
+          deletedItem = targetExp.bullets[bulletIndex];
+      }
+
+      if (targetExp.bullets_v1) targetExp.bullets_v1.splice(bulletIndex, 1);
+      if (targetExp.bullets_v3) targetExp.bullets_v3.splice(bulletIndex, 1);
+      if (targetExp.bullets) targetExp.bullets.splice(bulletIndex, 1);
+
+      newData.experience[expIndex] = targetExp;
+
+      if (section === 'experience' && newData.analysis && deletedItem) {
+          if (!newData.analysis.gaps) newData.analysis.gaps = [];
+          if (!newData.analysis.additions) newData.analysis.additions = [];
+          if (!newData.analysis.scores) newData.analysis.scores = { overall: 0, skills: 0, experience: 0, education: 0 };
+          if (!newData.analysis.gap_mapping) newData.analysis.gap_mapping = {};
+
+          // YENİ: Hafızadan orijinal eksiği bul
+          const originalGap = newData.analysis.gap_mapping[deletedItem];
+
+          if (originalGap) {
+              // Eğer AI'ın yedirdiği bir maddeyse, orijinal halini eksikler listesine geri at
+              if (!newData.analysis.gaps.includes(originalGap)) {
+                  newData.analysis.gaps.unshift(originalGap);
+              }
+          } else {
+              // Eğer AI'ın eklemediği, orijinal CV'de var olan bir madde siliniyorsa normal fallback davranışını yap
+              const fallbackGapText = "Eksik: " + deletedItem.substring(0, 30) + "...";
+              if (!newData.analysis.gaps.includes(fallbackGapText)) {
+                  newData.analysis.gaps.unshift(fallbackGapText); 
+              }
+          }
+
+          newData.analysis.additions = newData.analysis.additions.filter(a => a !== deletedItem); 
+          
+          // Skoru 5 puan geri düşür
+          newData.analysis.scores.experience = Math.max(0, (newData.analysis.scores.experience || 0) - 5);
+          
+          newData.analysis.scores.overall = Math.round(
+              ((newData.analysis.scores.skills || 0) + 
+               (newData.analysis.scores.experience) + 
+               (newData.analysis.scores.education || 0)) / 3
+          );
+      }
+
       return newData;
     });
   };
-
   const callGeminiApi = async (payload, retries = 3, backoff = 2000) => {
     const API_URL = 'https://resumatch-backend-zsmt.onrender.com';
     
@@ -907,6 +990,131 @@ const App = () => {
     }
   };
 
+// --- YENİ EKLENEN: AKILLI & TOPLU CV'YE YEDİRME FONKSİYONU ---
+  // --- YENİ EKLENEN: AKILLI & TOPLU CV'YE YEDİRME FONKSİYONU ---
+ const handleIntegrateBatchGaps = async () => {
+    if (selectedGaps.length === 0) return;
+    setIsIntegratingGaps(true);
+    ReactGA.event({ category: "Aksiyon", action: "Toplu_Eksik_Giderme_AI", label: `${selectedGaps.length}_madde` });
+
+    const langText = cvLanguage === 'tr' ? 'TÜRKÇE' : 'İNGİLİZCE';
+    const systemInstruction = `Sen profesyonel ve üst düzey bir CV yazarısın. Adayın CV'sinde ilan gereksinimlerine göre şu eksikler tespit edildi:
+    EKSİKLER LİSTESİ: ${JSON.stringify(selectedGaps)}
+    
+    Amacın bu eksik maddelerin HER BİRİNİ mantıksal olarak analiz edip profesyonel bir dille adayın CV'sine "yedirmek".
+    
+    KURALLAR:
+    1. Listede yer alan her bir madde için düşün: Bu bir YETENEK (Araç, yazılım, dil - Örn: SAP FI, B2B Satış) mi, yoksa DENEYİM (Görev, sorumluluk, yıl şartı - Örn: 5 yıl tecrübe, Bütçe oluşturma) mi?
+    2. Eğer YETENEK ise: "targetSection" olarak "skills" seç ve "skill_content" alanına maksimum 3 kelimelik, temiz bir teknoloji/yetenek adı yaz. (Örn: "5 yıllık SAP FI deneyimi" -> "SAP FI").
+    3. Eğer DENEYİM ise: "targetSection" olarak "experience" seç. "eksikliği" veya "uyumsuzluk" gibi kelimeleri ASLA kullanma. Aday sanki bunu gerçekten başarmış gibi güçlü, olumlu ve kurumsal bir iş tecrübesi cümlesi kur (Örn: "Milyonluk bütçe süreçlerini başarıyla yürüterek 5 yıllık kapsamlı bir finans yönetimi deneyimi elde ettim.").
+    4. Sadece geçerli bir JSON Dizisi (Array) döndür.
+    
+    ÇIKTI FORMATI:
+    [
+      {
+         "original_gap": "Listenin içindeki orijinal eksik metnini BİREBİR AYNI YAZ (Boşlukları bile atlama)",
+         "targetSection": "skills" veya "experience",
+         "skill_content": "Sadece targetSection skills ise doldur",
+         "exp_content_v1": "Sadece targetSection experience ise doldur. 1. Tekil (Ben) diliyle",
+         "exp_content_v3": "Sadece targetSection experience ise doldur. 3. Tekil (O/Edilgen) diliyle"
+      }
+    ]`;
+
+    try {
+        const result = await callGeminiApi({
+            contents: [{ parts: [{ text: "Yukarıdaki eksikleri analiz et ve istenen JSON dizisi formatında sonuç üret." }] }],
+            systemInstruction: { parts: [{ text: systemInstruction }] },
+            generationConfig: { responseMimeType: "application/json" }
+        });
+
+        const text = result.candidates?.[0]?.content?.parts?.[0]?.text;
+        if (text) {
+            let parsedArray = JSON.parse(text.replace(/```json|```/g, '').trim());
+            if (!Array.isArray(parsedArray)) { parsedArray = [parsedArray]; } 
+            
+            setOptimizedData(prev => {
+                const newData = JSON.parse(JSON.stringify(prev));
+                
+                let skillsBoost = 0;
+                let expBoost = 0;
+                
+                const processedOriginalGaps = new Set();
+
+                // YENİ EKLENEN KISIM: Hafıza nesnesini oluştur
+                if (!newData.analysis.gap_mapping) newData.analysis.gap_mapping = {};
+
+                parsedArray.forEach(parsed => {
+                    const originalGap = parsed.original_gap;
+                    const uniqueKey = parsed.skill_content || parsed.exp_content_v1;
+
+                    if (!originalGap || !uniqueKey || processedOriginalGaps.has(originalGap)) return;
+                    processedOriginalGaps.add(originalGap);
+
+                    // 1. Ekleme İşlemi
+                    if (parsed.targetSection === 'skills' && parsed.skill_content) {
+                        if (!newData.skills) newData.skills = [];
+                        if (!newData.skills.includes(parsed.skill_content)) {
+                            newData.skills.push(parsed.skill_content);
+                        }
+                        // HAFIZAYA YAZ: Bu yetenek, bu eksik cümlesinden geldi
+                        newData.analysis.gap_mapping[parsed.skill_content] = originalGap;
+                        skillsBoost += 4;
+                    } else if (parsed.targetSection === 'experience' && parsed.exp_content_v1) {
+                        if (newData.experience && newData.experience.length > 0) {
+                            if(!newData.experience[0].bullets_v1) newData.experience[0].bullets_v1 = [];
+                            if(!newData.experience[0].bullets_v3) newData.experience[0].bullets_v3 = [];
+                            if(!newData.experience[0].bullets) newData.experience[0].bullets = [];
+
+                            newData.experience[0].bullets_v1.push(parsed.exp_content_v1);
+                            newData.experience[0].bullets_v3.push(parsed.exp_content_v3 || parsed.exp_content_v1);
+                            newData.experience[0].bullets.push(parsed.exp_content_v1);
+                        } else {
+                            newData.summary_v1 = (newData.summary_v1 || "") + " " + parsed.exp_content_v1;
+                            newData.summary_v3 = (newData.summary_v3 || "") + " " + (parsed.exp_content_v3 || parsed.exp_content_v1);
+                        }
+                        
+                        // HAFIZAYA YAZ: Bu deneyim cümlesi, bu eksik cümlesinden geldi (Hem v1 hem v3 dilleri için)
+                        newData.analysis.gap_mapping[parsed.exp_content_v1] = originalGap;
+                        if (parsed.exp_content_v3) newData.analysis.gap_mapping[parsed.exp_content_v3] = originalGap;
+                        
+                        expBoost += 5;
+                    }
+                    
+                    // 2. Eksiklerden Sil ve Eklenenlere Taşı
+                    if (newData.analysis && newData.analysis.gaps) {
+                        newData.analysis.gaps = newData.analysis.gaps.filter(g => g.trim().toLowerCase() !== originalGap.trim().toLowerCase());
+                    }
+                    if (newData.analysis && !newData.analysis.additions) newData.analysis.additions = [];
+                    if (newData.analysis && !newData.analysis.additions.includes(uniqueKey)) {
+                        newData.analysis.additions.push(uniqueKey);
+                    }
+                });
+                
+                // 3. MATEMATİKSEL ATS PUANI HESAPLAMA
+                if(newData.analysis && newData.analysis.scores) {
+                    newData.analysis.scores.skills = Math.min(100, (newData.analysis.scores.skills || 70) + skillsBoost);
+                    newData.analysis.scores.experience = Math.min(100, (newData.analysis.scores.experience || 70) + expBoost);
+                    
+                    newData.analysis.scores.overall = Math.round(
+                        ((newData.analysis.scores.skills || 0) + 
+                         (newData.analysis.scores.experience || 0) + 
+                         (newData.analysis.scores.education || 70)) / 3
+                    );
+                }
+
+                return newData;
+            });
+            
+            setSelectedGaps([]); 
+        }
+    } catch (err) {
+        console.error("Akıllı yedirme hatası:", err);
+        setError("Eksikler giderilirken bir hata oluştu.");
+    } finally {
+        setIsIntegratingGaps(false);
+    }
+  };
+
   const handleOptimize = async (lang) => {
     if (!originalCV || !jobDescription) {
       setError('Lütfen CV PDF\'inizi yükleyin ve iş ilanını girin.');
@@ -925,6 +1133,7 @@ const App = () => {
     setLoadingText(lang === 'tr' ? "📄 PDF Analiz Ediliyor..." : "📄 Analyzing PDF...");
     setError(null);
     setCvLanguage(lang);
+    setSelectedGaps([]); // Yeni analiz başladığında seçili kutucukları sıfırla
     
     ReactGA.event({
       category: "Aksiyon",
@@ -1463,9 +1672,10 @@ const App = () => {
   };
 
   const getActiveBullets = (exp) => {
-      if (exp.bullets && Array.isArray(exp.bullets) && exp.bullets.length > 0) return exp.bullets;
-      if (narrativeVoice === 'first') return exp.bullets_v1 || [];
-      return exp.bullets_v3 || [];
+      // ÖNCELİKLİ OLARAK SEÇİLİ DİLİ (BEN/O) DÖNDÜR (Silme butonunun çalışmama sebebi burasıydı)
+      if (narrativeVoice === 'first' && exp.bullets_v1 && exp.bullets_v1.length > 0) return exp.bullets_v1;
+      if (narrativeVoice === 'third' && exp.bullets_v3 && exp.bullets_v3.length > 0) return exp.bullets_v3;
+      return exp.bullets || [];
   };
 
   const highlightKeywords = (text) => {
@@ -1885,30 +2095,39 @@ const App = () => {
                             </div>
                         </div>
 
-                        {/* GAPS (INTERACTIVE) */}
-                        <div className="bg-rose-50/50 p-4 rounded-xl border border-rose-100">
-                            <h4 className="flex items-center gap-2 text-sm font-bold text-rose-800 mb-3">
-                                <AlertTriangle className="w-4 h-4 text-rose-600" /> {translations[cvLanguage].gaps}
-                            </h4>
-                            <ul className="space-y-2">
-                                {optimizedData.analysis.gaps?.map((g, i) => (
-                                    <li key={i} className="text-xs text-rose-700 flex items-center justify-between gap-2 p-2.5 bg-white rounded-lg border border-rose-100 shadow-sm transition-all hover:border-rose-300">
-                                       <span className="flex items-center gap-2 font-medium"><XCircle className="w-3.5 h-3.5 flex-shrink-0 text-rose-500" /> {g}</span>
-                                       <button 
-                                          onClick={() => {
-                                             if (!optimizedData.skills.includes(g)) {
-                                                 setOptimizedData(prev => ({...prev, skills: [...(prev.skills || []), g]}));
-                                                 ReactGA.event({ category: "Aksiyon", action: "Eksik_Giderme_Butonu", label: g });
-                                             }
-                                          }}
-                                          className="text-[10px] bg-black text-white px-3 py-1.5 rounded-md font-bold hover:bg-slate-800 active:scale-95 transition-all flex items-center gap-1.5 flex-shrink-0 shadow-sm"
-                                       >
-                                          <Plus className="w-3 h-3" /> {translations[cvLanguage].quickAddBtn}
-                                       </button>
-                                    </li>
-                                ))}
-                            </ul>
-                        </div>
+                        {/* YENİ: SMART & BATCH GAPS (EKSİKLER) KISMI */}
+                        {optimizedData.analysis.gaps?.length > 0 && (
+                          <div className="bg-rose-50/50 p-4 rounded-xl border border-rose-100">
+                              <h4 className="flex items-center gap-2 text-sm font-bold text-rose-800 mb-3"><AlertTriangle className="w-4 h-4 text-rose-600" /> {translations[cvLanguage].gaps}</h4>
+                              <ul className="space-y-2">
+                                  {optimizedData.analysis.gaps.map((g, i) => (
+                                      <li key={i} className={`text-xs flex items-center justify-between gap-2 p-2.5 bg-white rounded-lg border shadow-sm transition-all cursor-pointer ${selectedGaps.includes(g) ? 'border-rose-500 ring-1 ring-rose-500' : 'border-rose-100 hover:border-rose-300'}`}>
+                                         <label className="flex items-center gap-3 font-medium cursor-pointer w-full text-rose-700">
+                                           <input 
+                                              type="checkbox" 
+                                              checked={selectedGaps.includes(g)} 
+                                              onChange={() => toggleGapSelection(g)} 
+                                              className="w-4 h-4 text-rose-600 bg-white border-rose-300 rounded focus:ring-rose-500 cursor-pointer" 
+                                           />
+                                           <span className="flex-1"><XCircle className="w-3.5 h-3.5 inline-block mr-1 text-rose-500" /> {g}</span>
+                                         </label>
+                                      </li>
+                                  ))}
+                              </ul>
+                              
+                              {/* TOPLU YEDİRME BUTONU */}
+                              {selectedGaps.length > 0 && (
+                                <button 
+                                  onClick={handleIntegrateBatchGaps} 
+                                  disabled={isIntegratingGaps} 
+                                  className="w-full mt-4 bg-black text-white px-4 py-3 rounded-lg font-bold hover:bg-slate-800 active:scale-[0.98] transition-all flex items-center justify-center gap-2 shadow-md disabled:opacity-50"
+                                >
+                                  {isIntegratingGaps ? <RefreshCw className="w-4 h-4 animate-spin" /> : <Wand2 className="w-4 h-4" />}
+                                  {translations[cvLanguage].quickAddBtn} ({selectedGaps.length})
+                                </button>
+                              )}
+                          </div>
+                        )}
 
                         {/* ADDITIONS */}
                         <div className="bg-emerald-50/50 p-4 rounded-xl border border-emerald-100">
@@ -2357,12 +2576,42 @@ const App = () => {
                                        </div>
                                        {activeTemplate === 'professional' && <p className={`text-[13px] font-semibold text-slate-600 mb-1 ${editableClass}`} contentEditable suppressContentEditableWarning onBlur={(e) => updateArrayField(sectionId, idx, 'company', e.target.innerText)}>{exp.company}</p>}
                                        <ul className={`list-disc ml-4 space-y-0.5 ${textAlign}`}>
-                                         {getActiveBullets(exp)?.map((b, bIdx) => (
-                                          <li key={bIdx} className={`text-[12px] text-slate-700 ${editableClass} relative group/subitem pr-6`} contentEditable suppressContentEditableWarning onBlur={(e) => updateBulletPoint(sectionId, idx, bIdx, e.target.innerText)}>
-                                                  {highlightKeywords(b)}
-                                                  <button onClick={() => removeBulletPoint(sectionId, idx, bIdx)} className="absolute right-0 top-0 opacity-0 group-hover/subitem:opacity-100 text-slate-300 hover:text-red-500 transition-opacity"><Trash2 className="w-3 h-3" /></button>
-                                          </li>
-                                         ))}
+                                         <ul className={`list-disc ml-4 space-y-0.5 ${textAlign}`}>
+  {getActiveBullets(exp)?.map((b, bIdx) => (
+    <li key={bIdx} className="text-[12px] text-slate-700 relative group/subitem pr-6">
+       
+       {/* Düzenlenebilir alan artık bu span içinde. 
+           Kullanıcı metni tamamen silip dışarı tıklarsa, sistem maddeyi kökten silecek. */}
+       <span 
+          className={`outline-none ${editableClass}`} 
+          contentEditable 
+          suppressContentEditableWarning 
+          onBlur={(e) => {
+              const newText = e.target.innerText.trim();
+              if (newText === '') {
+                  // EĞER METİN TAMAMEN SİLİNDİYSE: Çöp kutusuna basılmış gibi davran!
+                  removeBulletPoint(sectionId, idx, bIdx); 
+              } else {
+                  // EĞER SADECE DEĞİŞTİRİLDİYSE: Yeni metni kaydet
+                  updateBulletPoint(sectionId, idx, bIdx, newText);
+              }
+          }}
+       >
+          {highlightKeywords(b)}
+       </span>
+       
+       {/* Çöp kutusu butonuna contentEditable={false} ekledik ki 
+           yanlışlıkla yazıyla beraber buton da düzenlenebilir olmasın */}
+       <button 
+          contentEditable={false} 
+          onClick={() => removeBulletPoint(sectionId, idx, bIdx)} 
+          className="absolute right-0 top-0 opacity-0 group-hover/subitem:opacity-100 text-slate-300 hover:text-red-500 transition-opacity z-10"
+       >
+          <Trash2 className="w-3 h-3" />
+       </button>
+    </li>
+  ))}
+</ul>
                                        </ul>
                                      </div>
                                   ))}
@@ -2415,33 +2664,67 @@ const App = () => {
                                      </div>
                                   ))}
 
+                                 
                                   {/* YENİ: YETENEKLER TASARIMI */}
-                                  {sectionId === 'skills' && optimizedData.skills?.length > 0 && (
-                                     <div key={`skills-${showHighlights ? 'hl' : 'no'}`} className="grid grid-cols-2 sm:grid-cols-3 gap-x-6 gap-y-1.5">
-                                       {optimizedData.skills.map((s, i) => (
-                                         <div key={i} className={`text-[12px] text-slate-700 flex items-start gap-2 ${editableClass} relative group/item cursor-move leading-snug pr-2`} contentEditable suppressContentEditableWarning onBlur={(e) => updateSimpleList('skills', i, e.target.innerText)} draggable onDragStart={(e) => onSubDragStart(e, 'skills', i)} onDragOver={(e) => onSubDragOver(e, 'skills', i)} onDragEnd={onSubDragEnd}>
-                                           <div className="absolute -left-4 top-0 opacity-0 group-hover/item:opacity-100 transition-opacity p-0.5 text-slate-300 hover:text-black"><Move className="w-2.5 h-2.5" /></div>
-                                           <button onClick={() => removeSectionItem('skills', i)} className="absolute right-0 top-0 opacity-0 group-hover/item:opacity-100 text-slate-300 hover:text-red-500 transition-opacity"><Trash2 className="w-3 h-3" /></button>
-                                           <span className="w-1 h-1 rounded-full shrink-0 mt-[6px]" style={{ backgroundColor: themeColor }}></span> 
-                                           <span className="break-words flex-1">{highlightKeywords(s)}</span>
-                                         </div>
-                                       ))}
-                                     </div>
-                                  )}
+{sectionId === 'skills' && optimizedData.skills?.length > 0 && (
+   <div key={`skills-${showHighlights ? 'hl' : 'no'}`} className="grid grid-cols-2 sm:grid-cols-3 gap-x-6 gap-y-1.5">
+     {optimizedData.skills.map((s, i) => (
+       <div key={i} className="text-[12px] text-slate-700 flex items-start gap-2 relative group/item cursor-move leading-snug pr-2" draggable onDragStart={(e) => onSubDragStart(e, 'skills', i)} onDragOver={(e) => onSubDragOver(e, 'skills', i)} onDragEnd={onSubDragEnd}>
+         <div className="absolute -left-4 top-0 opacity-0 group-hover/item:opacity-100 transition-opacity p-0.5 text-slate-300 hover:text-black"><Move className="w-2.5 h-2.5" /></div>
+         <button onClick={() => removeSectionItem('skills', i)} className="absolute right-0 top-0 opacity-0 group-hover/item:opacity-100 text-slate-300 hover:text-red-500 transition-opacity z-10" title="Sil"><Trash2 className="w-3 h-3" /></button>
+         <span className="w-1 h-1 rounded-full shrink-0 mt-[6px]" style={{ backgroundColor: themeColor }}></span> 
+         
+         {/* DÜZENLEME ALANI SADECE BURADA */}
+         <span 
+            className={`break-words flex-1 outline-none ${editableClass}`} 
+            contentEditable 
+            suppressContentEditableWarning 
+            onBlur={(e) => {
+                const newText = e.target.innerText.trim();
+                if (newText === '') {
+                    removeSectionItem('skills', i); // Metin tamamen silindiyse komple maddeyi uçur ve puanı düşür
+                } else {
+                    updateSimpleList('skills', i, newText);
+                }
+            }}
+         >
+            {highlightKeywords(s)}
+         </span>
+       </div>
+     ))}
+   </div>
+)}
 
                                   {/* YENİ: EK BİLGİLER TASARIMI */}
-                                  {(sectionId === 'additional' || (sectionId.startsWith('custom_') && optimizedData[sectionId] && typeof optimizedData[sectionId][0] !== 'object')) && optimizedData[sectionId]?.length > 0 && (
-                                     <div key={`cust-${sectionId}-${showHighlights ? 'hl' : 'no'}`} className="grid grid-cols-2 sm:grid-cols-3 gap-x-6 gap-y-1.5">
-                                       {optimizedData[sectionId].map((a, i) => (
-                                         <div key={i} className={`text-[12px] text-slate-700 ${editableClass} relative group/item cursor-move flex items-start gap-1.5 leading-snug pr-2`} contentEditable suppressContentEditableWarning onBlur={(e) => updateSimpleList(sectionId, i, e.target.innerText)} draggable onDragStart={(e) => onSubDragStart(e, sectionId, i)} onDragOver={(e) => onSubDragOver(e, sectionId, i)} onDragEnd={onSubDragEnd}>
-                                           <div className="absolute -left-4 top-0 opacity-0 group-hover/item:opacity-100 transition-opacity p-0.5 text-slate-300 hover:text-black"><Move className="w-3 h-3" /></div>
-                                           <button onClick={() => removeSectionItem(sectionId, i)} className="absolute right-0 top-0 opacity-0 group-hover/item:opacity-100 text-slate-300 hover:text-red-500 transition-opacity"><Trash2 className="w-3 h-3" /></button>
-                                           <span className="font-bold mt-[-1px] text-slate-400">•</span> 
-                                           <span className="break-words flex-1">{highlightKeywords(a)}</span>
-                                         </div>
-                                       ))}
-                                     </div>
-                                  )}
+                                  {/* YENİ: EK BİLGİLER TASARIMI */}
+{(sectionId === 'additional' || (sectionId.startsWith('custom_') && optimizedData[sectionId] && typeof optimizedData[sectionId][0] !== 'object')) && optimizedData[sectionId]?.length > 0 && (
+   <div key={`cust-${sectionId}-${showHighlights ? 'hl' : 'no'}`} className="grid grid-cols-2 sm:grid-cols-3 gap-x-6 gap-y-1.5">
+     {optimizedData[sectionId].map((a, i) => (
+       <div key={i} className="text-[12px] text-slate-700 relative group/item cursor-move flex items-start gap-1.5 leading-snug pr-2" draggable onDragStart={(e) => onSubDragStart(e, sectionId, i)} onDragOver={(e) => onSubDragOver(e, sectionId, i)} onDragEnd={onSubDragEnd}>
+         <div className="absolute -left-4 top-0 opacity-0 group-hover/item:opacity-100 transition-opacity p-0.5 text-slate-300 hover:text-black"><Move className="w-3 h-3" /></div>
+         <button onClick={() => removeSectionItem(sectionId, i)} className="absolute right-0 top-0 opacity-0 group-hover/item:opacity-100 text-slate-300 hover:text-red-500 transition-opacity z-10" title="Sil"><Trash2 className="w-3 h-3" /></button>
+         <span className="font-bold mt-[-1px] text-slate-400">•</span> 
+         
+         {/* DÜZENLEME ALANI SADECE BURADA */}
+         <span 
+            className={`break-words flex-1 outline-none ${editableClass}`} 
+            contentEditable 
+            suppressContentEditableWarning 
+            onBlur={(e) => {
+                const newText = e.target.innerText.trim();
+                if (newText === '') {
+                    removeSectionItem(sectionId, i); // Metin silinirse maddeyi uçur
+                } else {
+                    updateSimpleList(sectionId, i, newText);
+                }
+            }}
+         >
+            {highlightKeywords(a)}
+         </span>
+       </div>
+     ))}
+   </div>
+)}
                                 </div>
                              </div>
                           );
