@@ -142,6 +142,14 @@ const App = () => {
   };
   const [photoZoom, setPhotoZoom] = useState(1);
   const [photoPos, setPhotoPos] = useState({ x: 0, y: 0 });
+  // YENİ: Çerçeve konumu ve boyutu için stateler
+  const [framePos, setFramePos] = useState({ x: 0, y: 0 });
+  const [isDraggingFrame, setIsDraggingFrame] = useState(false);
+  const [frameDragStart, setFrameDragStart] = useState({ x: 0, y: 0 });
+
+  const [frameSize, setFrameSize] = useState(128); // 128px varsayılan boyut (lg:w-32'ye denk)
+  const [isResizingFrame, setIsResizingFrame] = useState(false);
+  const [resizeStart, setResizeStart] = useState({ size: 128, x: 0, y: 0 });
   const [isDragging, setIsDragging] = useState(false);
   const [dragStart, setDragStart] = useState({ x: 0, y: 0 });
 
@@ -150,6 +158,43 @@ const App = () => {
   const resumeRef = useRef(null);
   const linkedinRef = useRef(null);
   const emailRef = useRef(null);
+
+  // --- YENİ: ÇERÇEVEYİ SÜRÜKLEME VE BOYUTLANDIRMA MANTIĞI ---
+  useEffect(() => {
+    // Mouse ekranda hareket ettikçe çalışır
+    const handleGlobalMouseMove = (e) => {
+      // Eğer sağ üstteki mavi butona basılı tutuluyorsa:
+      if (isDraggingFrame) {
+        setFramePos({
+          x: e.clientX - frameDragStart.x,
+          y: e.clientY - frameDragStart.y
+        });
+      } 
+      // Eğer sağ alttaki boyutlandırma butonuna basılı tutuluyorsa:
+      else if (isResizingFrame) {
+        const deltaX = e.clientX - resizeStart.x;
+        // Çerçevenin çok küçülmesini (64px) veya sayfa dışına taşmasını (350px) engelliyoruz
+        setFrameSize(Math.max(64, Math.min(350, resizeStart.size + deltaX)));
+      }
+    };
+
+    // Mouse'un tıklaması bırakıldığında çalışır
+    const handleGlobalMouseUp = () => {
+      if (isDraggingFrame) setIsDraggingFrame(false);
+      if (isResizingFrame) setIsResizingFrame(false);
+    };
+
+    // Sadece sürükleme işlemi varken sistemi yorar, durduğunda dinlemeyi bırakır
+    if (isDraggingFrame || isResizingFrame) {
+      document.addEventListener('mousemove', handleGlobalMouseMove);
+      document.addEventListener('mouseup', handleGlobalMouseUp);
+    }
+
+    return () => {
+      document.removeEventListener('mousemove', handleGlobalMouseMove);
+      document.removeEventListener('mouseup', handleGlobalMouseUp);
+    };
+  }, [isDraggingFrame, isResizingFrame, frameDragStart, resizeStart]);
 
   // GOOGLE ANALYTICS BAŞLATMA
   useEffect(() => {
@@ -2597,29 +2642,67 @@ const removeBulletPoint = (section, expIndex, bulletIndex) => {
                             </div>
                           </div>
                           
-                          {/* Fotoğraf */}
-                          {activeTemplate !== 'classic' && activeTemplate !== 'elegant' && activeTemplate !== 'bold' && (
-                            <div 
-                              className={`w-24 h-24 lg:w-32 lg:h-32 bg-slate-50 ${photoShape} border border-slate-200 flex items-center justify-center overflow-hidden flex-shrink-0 relative group select-none ${profileImage ? 'cursor-move' : ''}`}
-                              onMouseDown={handlePhotoMouseDown} onMouseMove={handlePhotoMouseMove} onMouseUp={handlePhotoMouseUp} onMouseLeave={handlePhotoMouseUp} onWheel={handlePhotoWheel}
-                            >
-                              {profileImage ? (
-                                <div className="w-full h-full relative flex items-center justify-center pointer-events-none">
-                                  <img 
-                                    src={profileImage} alt="Profil" 
-                                    className="max-w-full max-h-full transition-transform duration-75" 
-                                    style={{ 
-                                      imageRendering: 'high-quality',
-                                      objectFit: 'contain',
-                                      transform: `translate(${photoPos.x}px, ${photoPos.y}px) scale(${photoZoom})`,
-                                    }} 
-                                  />
-                                </div>
-                              ) : (
-                                <User className="w-12 h-12 lg:w-16 lg:h-16 text-slate-300" />
-                              )}
-                            </div>
-                          )}
+                         {/* Fotoğraf (YENİ SÜRÜKLENEBİLİR VE BOYUTLANDIRILABİLİR YAPI) */}
+{activeTemplate !== 'classic' && activeTemplate !== 'elegant' && activeTemplate !== 'bold' && profileImage && (
+  <div
+    className="bg-transparent flex items-center justify-center flex-shrink-0 relative group select-none z-40"
+    style={{
+      width: `${frameSize}px`,
+      height: `${frameSize}px`,
+      transform: `translate(${framePos.x}px, ${framePos.y}px)`,
+    }}
+  >
+    {/* 1. MAVİ TAŞIMA KULPU (Sağ Üst) */}
+    <div
+      className="absolute -top-3 -right-3 w-7 h-7 bg-blue-500 rounded-full cursor-grab active:cursor-grabbing shadow-lg z-50 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center print:hidden border-2 border-white"
+      onMouseDown={(e) => {
+        e.stopPropagation();
+        setIsDraggingFrame(true);
+        setFrameDragStart({ x: e.clientX - framePos.x, y: e.clientY - framePos.y });
+      }}
+      title="Tüm Çerçeveyi Taşı"
+    >
+      <Move className="w-3.5 h-3.5 text-white pointer-events-none" />
+    </div>
+
+    {/* 2. BOYUTLANDIRMA KULPU (Sağ Alt) */}
+    <div
+      className="absolute -bottom-2 -right-2 w-6 h-6 bg-white border-2 border-slate-300 rounded-full cursor-se-resize shadow-md z-50 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center print:hidden"
+      onMouseDown={(e) => {
+        e.stopPropagation();
+        e.preventDefault();
+        setIsResizingFrame(true);
+        setResizeStart({ size: frameSize, x: e.clientX });
+      }}
+      title="Çerçeveyi Büyüt / Küçült"
+    >
+      <ChevronsDown className="w-3.5 h-3.5 text-slate-500 -rotate-45 pointer-events-none" />
+    </div>
+
+    {/* 3. İÇERİK (Sadece Fotoğraf Varsa Render Edilir) */}
+    <div
+      className={`w-full h-full overflow-hidden flex items-center justify-center bg-slate-50 ${photoShape} border border-slate-200 shadow-sm cursor-move`}
+      onMouseDown={(e) => { e.stopPropagation(); handlePhotoMouseDown(e); }}
+      onMouseMove={handlePhotoMouseMove}
+      onMouseUp={handlePhotoMouseUp}
+      onMouseLeave={handlePhotoMouseUp}
+      onWheel={handlePhotoWheel}
+      title="İçteki fotoğrafı kaydırmak için sürükle"
+    >
+      <div className="w-full h-full relative flex items-center justify-center pointer-events-none">
+        <img
+          src={profileImage} alt="Profil"
+          className="max-w-full max-h-full transition-transform duration-75"
+          style={{
+            imageRendering: 'high-quality',
+            objectFit: 'contain',
+            transform: `translate(${photoPos.x}px, ${photoPos.y}px) scale(${photoZoom})`,
+          }}
+        />
+      </div>
+    </div>
+  </div>
+)}
                         </div>
 
                         {/* Sıralanabilir Bölümler */}
