@@ -355,14 +355,26 @@ const App = () => {
     }
   };
 
-  const sectionOptions = [
+  const baseSectionOptions = [
     { id: 'summary', labelTr: 'Kişisel Özet', labelEn: 'Professional Summary' },
     { id: 'experience', labelTr: 'İş Deneyimi', labelEn: 'Work Experience' },
     { id: 'education', labelTr: 'Eğitim', labelEn: 'Education' },
     { id: 'skills', labelTr: 'Teknik Yetenekler', labelEn: 'Technical Skills' },
     { id: 'additional', labelTr: 'Ek Bilgiler', labelEn: 'Additional Info' },
-    { id: 'contactLink', labelTr: '🔗 Sosyal Medya / Özel Link', labelEn: '🔗 Social / Custom Link' }, 
-    { id: 'custom', labelTr: '✨ Yeni Özel Bölüm', labelEn: '✨ New Custom Section' },
+    { id: 'contactLink', labelTr: '🔗 Sosyal Medya / Özel Link', labelEn: '🔗 Social / Custom Link' },
+  ];
+
+  // YENİ: Eklenen özel bölümleri anında listeye dahil eden dinamik liste
+  const dynamicSectionOptions = [
+    ...baseSectionOptions,
+    ...(optimizedData ? Object.keys(optimizedData)
+        .filter(key => key.startsWith('custom_'))
+        .map(key => ({
+            id: key,
+            labelTr: `📁 Mevcut: ${customHeadings[key] || 'Özel Bölüm'}`,
+            labelEn: `📁 Existing: ${customHeadings[key] || 'Custom Section'}`
+        })) : []),
+    { id: 'custom', labelTr: '✨ Yeni Özel Bölüm Oluştur', labelEn: '✨ Create New Custom Section' }
   ];
 
   const templateOptions = [
@@ -980,9 +992,75 @@ const removeBulletPoint = (section, expIndex, bulletIndex) => {
         
         const text = result.candidates?.[0]?.content?.parts?.[0]?.text;
         if (text) {
-            const cleanJson = text.replace(/```json/gi, '').replace(/```/gi, '').trim();
-            setInterviewReport(JSON.parse(cleanJson));
+        let parsed = JSON.parse(text.replace(/```json|```/g, '').trim());
+        
+        parsed = sanitizeData({
+            ...optimizedData, 
+            ...parsed 
+        });
+
+        // YENİ EKLENEN: Yeni oluşan bölümün ID'sini aklımızda tutuyoruz
+        let newlyCreatedCustomId = null; 
+
+        setOptimizedData(prev => {
+          const newData = { ...prev };
+          const uniqueId = Math.random().toString(36).substr(2, 9);
+          
+          if (addItemSection === 'summary') {
+              if (parsed.summary_v1) newData.summary_v1 = parsed.summary_v1;
+              if (parsed.summary_v3) newData.summary_v3 = parsed.summary_v3;
+          } 
+          else if (addItemSection === 'experience' && parsed.entry) {
+              newData.experience = [{...parsed.entry, id: uniqueId}, ...(newData.experience || [])];
+          } 
+          else if (addItemSection === 'education' && parsed.entry) {
+              newData.education = [{...parsed.entry, id: uniqueId}, ...(newData.education || [])];
+          } 
+          else if ((addItemSection === 'skills' || addItemSection === 'additional') && parsed.items) {
+              newData[addItemSection] = [...(newData[addItemSection] || []), ...parsed.items];
+          }
+          else if (addItemSection === 'contactLink' && parsed.link) { 
+              newData.customLinks = [...(newData.customLinks || []), { ...parsed.link, id: uniqueId }];
+          }
+          else if (addItemSection === 'custom') {
+              const customId = `custom_${uniqueId}`;
+              newlyCreatedCustomId = customId; // ID'yi hafızaya aldık
+              
+              if (parsed.type === 'detailed' && parsed.entries) {
+                   newData[customId] = parsed.entries.map(e => ({...e, id: Math.random().toString(36).substr(2, 9)}));
+              } else if (parsed.items) {
+                   newData[customId] = parsed.items;
+              }
+              
+              setCustomHeadings(h => ({ ...h, [customId]: addItemTitle.toUpperCase() })); 
+              setSectionsOrder(o => [...o, customId]); 
+          }
+          // Veriyi mevcut bölüme ilave et (Burası kodunda zaten vardı, koruyoruz)
+          else if (addItemSection.startsWith('custom_')) {
+              const existingData = newData[addItemSection];
+              let isDetailed = true;
+              if (existingData && existingData.length > 0) {
+                  isDetailed = typeof existingData[0] === 'object';
+              }
+              
+              if (isDetailed && parsed.entry) {
+                  newData[addItemSection] = [{...parsed.entry, id: uniqueId}, ...(newData[addItemSection] || [])];
+              } else if (!isDetailed && parsed.items) {
+                  newData[addItemSection] = [...(newData[addItemSection] || []), ...parsed.items];
+              }
+          }
+
+          return newData;
+        });
+        
+        setAddItemInput('');
+        setAddItemTitle(''); 
+        
+        // EFSANE DOKUNUŞ BURADA: Eğer sıfırdan bir bölüm yarattıysak, menüyü otomatik olarak o bölüme kaydır!
+        if (newlyCreatedCustomId) {
+            setAddItemSection(newlyCreatedCustomId);
         }
+      }
     } catch (err) {
         console.error("Rapor oluşturulamadı:", err);
     } finally {
@@ -1268,7 +1346,7 @@ const removeBulletPoint = (section, expIndex, bulletIndex) => {
     }
   };
 
-  const handleAddItem = async () => {
+ const handleAddItem = async () => {
     if (!addItemInput.trim()) return;
     setIsAddingItem(true);
     
@@ -1300,6 +1378,21 @@ const removeBulletPoint = (section, expIndex, bulletIndex) => {
             JSON Çıktısı: {"type": "simple", "items": ["Madde 1", "Madde 2"]}
         Markdown kullanma. Sadece JSON döndür. Dili: ${langText}.`;
     }
+    else if (addItemSection.startsWith('custom_')) {
+        const existingData = optimizedData[addItemSection];
+        let isDetailed = true; 
+        if (existingData && existingData.length > 0) {
+            isDetailed = typeof existingData[0] === 'object';
+        }
+        
+        userPrompt = `Mevcut Bölüm: ${customHeadings[addItemSection] || 'Özel'}\nEklenecek İçerik: ${addItemInput}`;
+        
+        if (isDetailed) {
+            systemInstruction = `Sen profesyonel bir CV yazarısın. Kullanıcının girdisinden bu özel bölüm için DETAYLI formatta bir madde oluştur. Çıktı JSON: {"entry": {"role": "Proje/Başlık", "company": "Alt Başlık/Kurum vb", "date": "Tarih", "bullets": ["Açıklama 1"]}}. Markdown kullanma. Sadece JSON döndür. Dili: ${langText}.`;
+        } else {
+             systemInstruction = `Sen profesyonel bir CV yazarısın. Kullanıcının girdisinden bu özel bölüm için BASİT formatta bir madde oluştur. Çıktı JSON: {"items": ["Madde 1"]}. Markdown kullanma. Sadece JSON döndür. Dili: ${langText}.`;
+        }
+    }
     else {
         systemInstruction = `Sen profesyonel bir CV yazarısın. Kullanıcının girdisini ${addItemSection === 'skills' ? 'Teknik Yetenek' : 'Ek Bilgi'} formatına çevir. Tek bir madde veya liste olabilir. Çıktı formatı JSON: {"items": ["Madde 1"]}. Markdown kullanma. Dili: ${langText}. Sadece JSON döndür.`;
     }
@@ -1320,9 +1413,16 @@ const removeBulletPoint = (section, expIndex, bulletIndex) => {
             ...parsed 
         });
 
+        // YENİ VE HATASIZ YAPI:
+        const uniqueId = Math.random().toString(36).substr(2, 9);
+        let newlyCreatedCustomId = null;
+
+        if (addItemSection === 'custom') {
+            newlyCreatedCustomId = `custom_${uniqueId}`;
+        }
+
         setOptimizedData(prev => {
           const newData = { ...prev };
-          const uniqueId = Math.random().toString(36).substr(2, 9);
           
           if (addItemSection === 'summary') {
               if (parsed.summary_v1) newData.summary_v1 = parsed.summary_v1;
@@ -1341,24 +1441,53 @@ const removeBulletPoint = (section, expIndex, bulletIndex) => {
               newData.customLinks = [...(newData.customLinks || []), { ...parsed.link, id: uniqueId }];
           }
           else if (addItemSection === 'custom') {
-              const customId = `custom_${uniqueId}`;
-              
               if (parsed.type === 'detailed' && parsed.entries) {
-                   newData[customId] = parsed.entries.map(e => ({...e, id: Math.random().toString(36).substr(2, 9)}));
+                   newData[newlyCreatedCustomId] = parsed.entries.map(e => ({...e, id: Math.random().toString(36).substr(2, 9)}));
               } else if (parsed.items) {
-                   newData[customId] = parsed.items;
+                   newData[newlyCreatedCustomId] = parsed.items;
+              }
+          }
+          else if (addItemSection.startsWith('custom_')) {
+              const existingData = newData[addItemSection];
+              let isDetailed = true;
+              if (existingData && existingData.length > 0) {
+                  isDetailed = typeof existingData[0] === 'object';
               }
               
-              setCustomHeadings(h => ({ ...h, [customId]: addItemTitle.toUpperCase() })); 
-              setSectionsOrder(o => [...o, customId]); 
+              if (isDetailed && parsed.entry) {
+                  newData[addItemSection] = [{...parsed.entry, id: uniqueId}, ...(newData[addItemSection] || [])];
+              } else if (!isDetailed && parsed.items) {
+                  newData[addItemSection] = [...(newData[addItemSection] || []), ...parsed.items];
+              }
           }
 
           return newData;
         });
+        
+        // BAŞLIKLARI VE SIRALAMAYI REACT GÜNCELLEMESİNİN DIŞINA, GÜVENLİ YERE ALDIK
+        if (addItemSection === 'custom' && newlyCreatedCustomId) {
+            setCustomHeadings(h => ({ ...h, [newlyCreatedCustomId]: addItemTitle.toUpperCase() })); 
+            
+            setSectionsOrder(o => {
+                // Çift oluşmasını engelleyen kesin güvenlik (includes kontrolü)
+                if (!o.includes(newlyCreatedCustomId)) {
+                    return [...o, newlyCreatedCustomId];
+                }
+                return o;
+            });
+            
+            // Açılır menüyü yeni bölüme sabitle
+            setAddItemSection(newlyCreatedCustomId);
+        }
+
         setAddItemInput('');
         setAddItemTitle(''); 
       }
-    } catch (err) { setError("Öğe eklenirken hata oluştu: " + err.message); } finally { setIsAddingItem(false); }
+    } catch (err) { 
+        setError("Öğe eklenirken hata oluştu: " + err.message); 
+    } finally { 
+        setIsAddingItem(false); 
+    }
   };
 
   const handleDownloadPdf = async () => {
@@ -2149,8 +2278,8 @@ const removeBulletPoint = (section, expIndex, bulletIndex) => {
                      <p className="text-xs text-slate-500 mb-4">{translations[cvLanguage].addItemDesc}</p>
                      <div className="space-y-3">
                        <select value={addItemSection} onChange={(e) => setAddItemSection(e.target.value)} className="w-full p-3 bg-white border border-slate-200 rounded-xl text-xs font-medium text-slate-700 focus:ring-2 focus:ring-black outline-none">
-                         {sectionOptions.map(opt => (<option key={opt.id} value={opt.id}>{cvLanguage === 'tr' ? opt.labelTr : opt.labelEn}</option>))}
-                       </select>
+  {dynamicSectionOptions.map(opt => (<option key={opt.id} value={opt.id}>{cvLanguage === 'tr' ? opt.labelTr : opt.labelEn}</option>))}
+</select>
                        {/* --- YENİ BAŞLIK GİRİŞİ --- */}
                        {(addItemSection === 'custom' || addItemSection === 'contactLink') && (
                           <input 
