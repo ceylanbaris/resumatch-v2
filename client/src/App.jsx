@@ -549,48 +549,67 @@ const App = () => {
     if (fileInputRef.current) fileInputRef.current.value = '';
   };
 
-  // YENİ: Ekran Görüntüsünden İş İlanı Okuma (OCR)
+  
+  // YENİ: ÇOKLU Ekran Görüntüsünden İş İlanı Okuma (OCR)
   const handleJobScreenshotUpload = async (e) => {
-    const file = e.target.files[0];
-    if (!file || !file.type.startsWith('image/')) return;
+    // Tüm seçilen dosyaları bir diziye (array) çeviriyoruz
+    const files = Array.from(e.target.files);
+    if (!files || files.length === 0) return;
+
+    // Sadece resim dosyalarını filtreliyoruz
+    const imageFiles = files.filter(file => file.type.startsWith('image/'));
+    if (imageFiles.length === 0) {
+      setError("Lütfen geçerli resim dosyaları seçin.");
+      return;
+    }
 
     setIsExtractingJob(true);
     setError(null);
 
     try {
-      // Resmi Base64 formatına çevir (Gemini API'nin anlayacağı dil)
-      const base64Image = await new Promise((resolve, reject) => {
-        const reader = new FileReader();
-        reader.onload = () => resolve(reader.result.split(',')[1]); 
-        reader.onerror = reject;
-        reader.readAsDataURL(file);
-      });
+      // Tüm resimleri aynı anda Base64 formatına çeviriyoruz
+      const imageParts = await Promise.all(
+        imageFiles.map(async (file) => {
+          const base64Data = await new Promise((resolve, reject) => {
+            const reader = new FileReader();
+            reader.onload = () => resolve(reader.result.split(',')[1]); 
+            reader.onerror = reject;
+            reader.readAsDataURL(file);
+          });
+          return {
+            inlineData: {
+              data: base64Data,
+              mimeType: file.type
+            }
+          };
+        })
+      );
 
-      // Yapay Zekaya Gönderilecek Paket
+      // Yapay Zekaya Gönderilecek Paket (Tüm resimler eklendi)
       const payload = {
         contents: [
           {
             parts: [
-              { text: "Bu görsel bir iş ilanının ekran görüntüsüdür. Lütfen görseldeki tüm metni, ilan detaylarını, aranan nitelikleri ve iş tanımını eksiksiz bir şekilde metne dönüştür. Sadece metni ver, ek yorum veya açıklama yapma." },
-              { inlineData: { data: base64Image, mimeType: file.type } }
+              { text: "Bu görseller bir iş ilanının ekran görüntüleridir. Lütfen görsellerdeki tüm metni, ilan detaylarını, aranan nitelikleri ve iş tanımını eksiksiz bir şekilde birleştirerek metne dönüştür. Birden fazla görsel varsa aralarındaki akışı ve anlam bütünlüğünü koru. Sadece metni ver, ek yorum veya açıklama yapma." },
+              ...imageParts // Çevrilen tüm fotoğrafları buraya ekliyoruz
             ]
           }
         ],
-        systemInstruction: { parts: [{ text: "Sen uzman bir OCR (Optik Karakter Tanıma) ve veri çıkarma asistanısın. Görseldeki iş ilanı metnini kusursuzca okuyup düz metin olarak vermelisin." }] }
+        systemInstruction: { parts: [{ text: "Sen uzman bir OCR ve veri çıkarma asistanısın. Görsellerdeki iş ilanı metinlerini kusursuzca okuyup birleştirerek düz metin olarak vermelisin." }] }
       };
 
       const result = await callGeminiApi(payload);
       const extractedText = result.candidates?.[0]?.content?.parts?.[0]?.text;
 
       if (extractedText) {
-        // Okunan metni, mevcut metnin üzerine (varsa alt satıra geçerek) ekle
+        // Okunan metni, mevcut metnin üzerine ekle
         setJobDescription(prev => prev ? prev + "\n\n" + extractedText.trim() : extractedText.trim());
       } else {
-        throw new Error("Görselden metin okunamadı.");
+        throw new Error("Görsellerden metin okunamadı.");
       }
     } catch (err) {
       console.error("Görsel okuma hatası:", err);
-      setError("İlan görseli okunurken bir hata oluştu. Lütfen ilanın net bir şekilde okunduğundan emin olun.");
+      setError("İlan görselleri okunurken bir hata oluştu. Lütfen ilanların net bir şekilde okunduğundan emin olun.");
     } finally {
       setIsExtractingJob(false);
       if (jobImageInputRef.current) jobImageInputRef.current.value = ''; // Input'u sıfırla
@@ -2160,7 +2179,7 @@ const removeBulletPoint = (section, expIndex, bulletIndex) => {
                     )}
                   </div>
                 </div>
-                
+
                {/* İş İlanı */}
                 <div className="block">
                   <div className="flex justify-between items-end mb-2">
@@ -2176,7 +2195,7 @@ const removeBulletPoint = (section, expIndex, bulletIndex) => {
                       {isExtractingJob ? <RefreshCw className="w-3.5 h-3.5 animate-spin" /> : <Camera className="w-3.5 h-3.5" />}
                       {isExtractingJob ? "OKUNUYOR..." : "FOTOĞRAFTAN OKU"}
                     </button>
-                    <input type="file" ref={jobImageInputRef} onChange={handleJobScreenshotUpload} accept="image/*" className="hidden" />
+                   <input type="file" ref={jobImageInputRef} onChange={handleJobScreenshotUpload} accept="image/*" multiple className="hidden" /> 
                   </div>
                   
                   <textarea 
