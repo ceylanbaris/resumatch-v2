@@ -155,6 +155,9 @@ const App = () => {
 
   const fileInputRef = useRef(null);
   const photoInputRef = useRef(null);
+  // YENİ: İş İlanı Fotoğraf Okuma (OCR) Stateleri
+  const jobImageInputRef = useRef(null);
+  const [isExtractingJob, setIsExtractingJob] = useState(false);
   const resumeRef = useRef(null);
   const linkedinRef = useRef(null);
   const emailRef = useRef(null);
@@ -544,6 +547,54 @@ const App = () => {
   const clearPdfData = () => {
     setOriginalCV('');
     if (fileInputRef.current) fileInputRef.current.value = '';
+  };
+
+  // YENİ: Ekran Görüntüsünden İş İlanı Okuma (OCR)
+  const handleJobScreenshotUpload = async (e) => {
+    const file = e.target.files[0];
+    if (!file || !file.type.startsWith('image/')) return;
+
+    setIsExtractingJob(true);
+    setError(null);
+
+    try {
+      // Resmi Base64 formatına çevir (Gemini API'nin anlayacağı dil)
+      const base64Image = await new Promise((resolve, reject) => {
+        const reader = new FileReader();
+        reader.onload = () => resolve(reader.result.split(',')[1]); 
+        reader.onerror = reject;
+        reader.readAsDataURL(file);
+      });
+
+      // Yapay Zekaya Gönderilecek Paket
+      const payload = {
+        contents: [
+          {
+            parts: [
+              { text: "Bu görsel bir iş ilanının ekran görüntüsüdür. Lütfen görseldeki tüm metni, ilan detaylarını, aranan nitelikleri ve iş tanımını eksiksiz bir şekilde metne dönüştür. Sadece metni ver, ek yorum veya açıklama yapma." },
+              { inlineData: { data: base64Image, mimeType: file.type } }
+            ]
+          }
+        ],
+        systemInstruction: { parts: [{ text: "Sen uzman bir OCR (Optik Karakter Tanıma) ve veri çıkarma asistanısın. Görseldeki iş ilanı metnini kusursuzca okuyup düz metin olarak vermelisin." }] }
+      };
+
+      const result = await callGeminiApi(payload);
+      const extractedText = result.candidates?.[0]?.content?.parts?.[0]?.text;
+
+      if (extractedText) {
+        // Okunan metni, mevcut metnin üzerine (varsa alt satıra geçerek) ekle
+        setJobDescription(prev => prev ? prev + "\n\n" + extractedText.trim() : extractedText.trim());
+      } else {
+        throw new Error("Görselden metin okunamadı.");
+      }
+    } catch (err) {
+      console.error("Görsel okuma hatası:", err);
+      setError("İlan görseli okunurken bir hata oluştu. Lütfen ilanın net bir şekilde okunduğundan emin olun.");
+    } finally {
+      setIsExtractingJob(false);
+      if (jobImageInputRef.current) jobImageInputRef.current.value = ''; // Input'u sıfırla
+    }
   };
 
   const handlePhotoUpload = (e) => {
@@ -2110,11 +2161,31 @@ const removeBulletPoint = (section, expIndex, bulletIndex) => {
                   </div>
                 </div>
                 
-                {/* İş İlanı */}
-                <label className="block">
-                  <span className="text-xs font-bold text-slate-500 uppercase tracking-wider mb-2 block">3. Hedef İş İlanı</span>
-                  <textarea className="w-full h-24 lg:h-32 p-3 bg-slate-50 border border-slate-200 rounded-xl text-xs focus:ring-2 focus:ring-black focus:border-transparent outline-none placeholder-slate-400 transition-all" value={jobDescription} onChange={(e) => setJobDescription(e.target.value)} placeholder="İş tanımını buraya yapıştırın..." />
-                </label>
+               {/* İş İlanı */}
+                <div className="block">
+                  <div className="flex justify-between items-end mb-2">
+                    <span className="text-xs font-bold text-slate-500 uppercase tracking-wider">3. Hedef İş İlanı</span>
+                    
+                    {/* YENİ: Ekran Görüntüsü Yükleme Butonu */}
+                    <button
+                      onClick={() => jobImageInputRef.current?.click()}
+                      disabled={isExtractingJob}
+                      className="flex items-center gap-1.5 text-[10px] sm:text-xs bg-slate-100 hover:bg-slate-200 text-slate-700 py-1.5 px-3 rounded-lg font-bold transition-colors disabled:opacity-50 border border-slate-200 shadow-sm"
+                      title="İlanın ekran görüntüsünü yükleyerek metni otomatik çekin"
+                    >
+                      {isExtractingJob ? <RefreshCw className="w-3.5 h-3.5 animate-spin" /> : <Camera className="w-3.5 h-3.5" />}
+                      {isExtractingJob ? "OKUNUYOR..." : "FOTOĞRAFTAN OKU"}
+                    </button>
+                    <input type="file" ref={jobImageInputRef} onChange={handleJobScreenshotUpload} accept="image/*" className="hidden" />
+                  </div>
+                  
+                  <textarea 
+                    className="w-full h-24 lg:h-32 p-3 bg-slate-50 border border-slate-200 rounded-xl text-xs focus:ring-2 focus:ring-black focus:border-transparent outline-none placeholder-slate-400 transition-all" 
+                    value={jobDescription} 
+                    onChange={(e) => setJobDescription(e.target.value)} 
+                    placeholder="İlan metnini kopyalayıp buraya yapıştırın veya sağ üstteki buton ile ekran görüntüsünü yükleyin..." 
+                  />
+                </div>
 
                 {/* Tasarım ve Özelleştirme */}
                 <div className="bg-slate-50 p-4 sm:p-5 rounded-xl border border-slate-100 space-y-5">
